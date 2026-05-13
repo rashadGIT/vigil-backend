@@ -42,6 +42,7 @@ async function bootstrap(): Promise<void> {
     origin: [
       'https://app.kelovaapp.com',
       /\.kelovaapp\.com$/,
+      /\.amplifyapp\.com$/,
       'http://localhost:3000',
     ],
     credentials: true,

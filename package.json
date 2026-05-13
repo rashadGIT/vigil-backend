@@ -17,7 +17,8 @@
     "test:contract": "jest --config jest.contract.config.ts",
     "type-check": "tsc --noEmit",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "build:lambda": "nest build && npm prune --omit=dev"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "3.1027.0",
@@ -43,6 +44,7 @@
     "helmet": "8.1.0",
     "pdfkit": "0.18.0",
     "reflect-metadata": "^0.2.2",
+    "@codegenie/serverless-express": "^4.0.0",
     "resend": "6.10.0",
     "rxjs": "^7.8.1"
   },
@@ -50,6 +52,7 @@
     "@nestjs/cli": "11.0.18",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "11.1.18",
+    "@types/aws-lambda": "^8.10.145",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.14.0",

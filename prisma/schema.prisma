@@ -4,7 +4,8 @@
 // Generated client consumed by NestJS PrismaService in Phase 5.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
