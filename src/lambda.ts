@@ -9,22 +9,28 @@ import type { Handler } from 'aws-lambda';
 
 let handler: Handler;
 
-async function loadDatabaseUrl(): Promise<void> {
-  if (process.env.DATABASE_URL) return;
-
+async function loadSecrets(): Promise<void> {
   const client = new SecretsManagerClient({ region: process.env.AWS_REGION ?? 'us-east-2' });
-  const res = await client.send(
-    new GetSecretValueCommand({ SecretId: 'vigil/rds/credentials' }),
-  );
-  const s = JSON.parse(res.SecretString!);
-  process.env.DATABASE_URL =
-    `postgresql://${s.username}:${encodeURIComponent(s.password)}` +
-    `@${s.host}:${s.port}/${s.dbname}?connection_limit=1&connect_timeout=10`;
+
+  if (!process.env.DATABASE_URL) {
+    const res = await client.send(new GetSecretValueCommand({ SecretId: 'vigil/rds/credentials' }));
+    const s = JSON.parse(res.SecretString!);
+    process.env.DATABASE_URL =
+      `postgresql://${s.username}:${encodeURIComponent(s.password)}` +
+      `@${s.host}:${s.port}/${s.dbname}?connection_limit=1&connect_timeout=10`;
+  }
+
+  if (!process.env.COGNITO_USER_POOL_ID || !process.env.COGNITO_CLIENT_ID) {
+    const res = await client.send(new GetSecretValueCommand({ SecretId: 'vigil/cognito/config' }));
+    const c = JSON.parse(res.SecretString!);
+    process.env.COGNITO_USER_POOL_ID = c.userPoolId;
+    process.env.COGNITO_CLIENT_ID = c.clientId;
+  }
 }
 
 export const lambdaHandler: Handler = async (event, context, callback) => {
   if (!handler) {
-    await loadDatabaseUrl();
+    await loadSecrets();
 
     const app = await NestFactory.create(AppModule);
 
