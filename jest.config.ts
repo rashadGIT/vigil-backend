@@ -10,7 +10,7 @@ const config: Config = {
     '<rootDir>/test/',
   ],
   transform: {
-    '^.+\\.(t|j)s$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
+    '^.+\\.(t|j)s$': ['ts-jest', { tsconfig: 'tsconfig.spec.json' }],
   },
   collectCoverageFrom: [
     'src/modules/cases/cases.service.ts',
