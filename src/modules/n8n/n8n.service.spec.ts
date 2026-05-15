@@ -172,4 +172,91 @@ describe('N8nService', () => {
       expect(calls).toContain('N8N_WEBHOOK_REVIEW_REQUEST');
     });
   });
+
+  describe('onModuleInit', () => {
+    it('calls configService.get once per registered event (5 events)', () => {
+      mockConfig.get.mockReturnValue(undefined);
+
+      service.onModuleInit();
+
+      expect(mockConfig.get).toHaveBeenCalledTimes(5);
+    });
+
+    it('does not throw when all webhooks are PLACEHOLDER', () => {
+      mockConfig.get.mockReturnValue('https://PLACEHOLDER.example.com/webhook');
+
+      expect(() => service.onModuleInit()).not.toThrow();
+    });
+
+    it('does not throw when webhooks are configured with real urls', () => {
+      mockConfig.get.mockReturnValue('https://real.example.com/webhook');
+
+      expect(() => service.onModuleInit()).not.toThrow();
+    });
+  });
+
+  describe('handleCallback', () => {
+    let mockPrismaFull: {
+      followUp: { updateMany: jest.Mock };
+      document: { updateMany: jest.Mock };
+    };
+
+    beforeEach(async () => {
+      mockPrismaFull = {
+        followUp: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+        document: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+      };
+      const mod: TestingModule = await Test.createTestingModule({
+        providers: [
+          N8nService,
+          { provide: HttpService, useValue: mockHttp },
+          { provide: ConfigService, useValue: mockConfig },
+          { provide: PrismaService, useValue: mockPrismaFull },
+        ],
+      }).compile();
+      service = mod.get<N8nService>(N8nService);
+    });
+
+    it('grief_followup_sent: calls followUp.updateMany with followUpId and sets status to sent', async () => {
+      await service.handleCallback('grief_followup_sent', {
+        followUpId: 'fu-1',
+      });
+
+      expect(mockPrismaFull.followUp.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ id: 'fu-1', status: 'pending' }),
+          data: expect.objectContaining({ status: 'sent' }),
+        }),
+      );
+    });
+
+    it('grief_followup_sent: does not call updateMany when followUpId is missing', async () => {
+      await service.handleCallback('grief_followup_sent', {});
+
+      expect(mockPrismaFull.followUp.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('document_generated: calls document.updateMany with documentId', async () => {
+      await service.handleCallback('document_generated', {
+        documentId: 'doc-1',
+      });
+
+      expect(mockPrismaFull.document.updateMany).toHaveBeenCalledWith({
+        where: { id: 'doc-1' },
+        data: { uploaded: true },
+      });
+    });
+
+    it('document_generated: does not call updateMany when documentId is missing', async () => {
+      await service.handleCallback('document_generated', {});
+
+      expect(mockPrismaFull.document.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('unknown event: resolves without throwing', async () => {
+      await expect(
+        service.handleCallback('unknown_event', { foo: 'bar' }),
+      ).resolves.toBeUndefined();
+    });
+  });
 });

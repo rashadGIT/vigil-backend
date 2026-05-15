@@ -3,6 +3,7 @@
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
+import { ConflictException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { EmailService } from '../../common/email/email.service';
@@ -11,6 +12,7 @@ import {
   CognitoIdentityProviderClient,
   AdminCreateUserCommand,
   AdminSetUserPasswordCommand,
+  UsernameExistsException,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 jest.mock('@aws-sdk/client-cognito-identity-provider');
@@ -52,7 +54,10 @@ describe('UsersService', () => {
         { provide: ConfigService, useValue: mockConfig },
         {
           provide: EmailService,
-          useValue: { sendWelcome: jest.fn().mockResolvedValue(undefined) },
+          useValue: {
+            sendWelcome: jest.fn().mockResolvedValue(undefined),
+            send: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();
@@ -134,6 +139,75 @@ describe('UsersService', () => {
           data: expect.objectContaining({ cognitoSub: '' }),
         }),
       );
+    });
+  });
+
+  describe('invite', () => {
+    const inviteDto = {
+      email: 'invite@example.com',
+      name: 'New Staff',
+      role: 'staff' as any,
+    };
+
+    beforeEach(() => {
+      asMock(mockPrisma.tenant.findUniqueOrThrow).mockResolvedValue({
+        name: 'Sunrise Funeral Home',
+      });
+      mockSend.mockResolvedValue({
+        User: { Attributes: [{ Name: 'sub', Value: 'invite-sub-123' }] },
+      });
+      scopedUser.create.mockResolvedValue({
+        id: 'user-invite-1',
+        ...inviteDto,
+      });
+    });
+
+    it('creates user in Cognito with SUPPRESS MessageAction', async () => {
+      await service.invite('tenant-a', inviteDto);
+
+      expect(mockSend).toHaveBeenCalledWith(expect.any(AdminCreateUserCommand));
+    });
+
+    it('creates user in Prisma with cognitoSub from Cognito response', async () => {
+      await service.invite('tenant-a', inviteDto);
+
+      expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-a');
+      expect(scopedUser.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            tenantId: 'tenant-a',
+            email: inviteDto.email,
+            cognitoSub: 'invite-sub-123',
+          }),
+        }),
+      );
+    });
+
+    it('throws ConflictException when email already exists in Cognito', async () => {
+      mockSend.mockRejectedValue(
+        new UsernameExistsException({ message: 'exists', $metadata: {} }),
+      );
+
+      await expect(service.invite('tenant-a', inviteDto)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
+    it('rethrows non-UsernameExists Cognito errors', async () => {
+      mockSend.mockRejectedValue(new Error('Unexpected Cognito error'));
+
+      await expect(service.invite('tenant-a', inviteDto)).rejects.toThrow(
+        'Unexpected Cognito error',
+      );
+    });
+
+    it('returns the created user', async () => {
+      const created = { id: 'user-invite-1', email: inviteDto.email };
+      scopedUser.create.mockResolvedValue(created);
+
+      const result = await service.invite('tenant-a', inviteDto);
+
+      expect(result).toEqual(created);
     });
   });
 

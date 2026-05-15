@@ -116,6 +116,59 @@ describe('CasesService', () => {
     });
   });
 
+  describe('getStats', () => {
+    beforeEach(() => {
+      asMock(mockPrisma._scoped.case.count).mockResolvedValue(0);
+      asMock(mockPrisma._scoped.signature.count).mockResolvedValue(0);
+    });
+
+    it('returns activeCases from db count', async () => {
+      asMock(mockPrisma._scoped.case.count)
+        .mockResolvedValueOnce(5) // activeCases
+        .mockResolvedValueOnce(3) // activeCasesYesterday
+        .mockResolvedValueOnce(8) // casesThisMonth
+        .mockResolvedValueOnce(6) // casesLastMonth
+        .mockResolvedValueOnce(2); // overdueTasks
+      asMock(mockPrisma._scoped.signature.count).mockResolvedValue(1);
+
+      const result = await service.getStats('tenant-a');
+
+      expect(result.activeCases).toBe(5);
+    });
+
+    it('computes activeCasesDelta as difference from yesterday', async () => {
+      asMock(mockPrisma._scoped.case.count)
+        .mockResolvedValueOnce(10)
+        .mockResolvedValueOnce(7)
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(0);
+      asMock(mockPrisma._scoped.signature.count).mockResolvedValue(0);
+
+      const result = await service.getStats('tenant-a');
+
+      expect(result.activeCasesDelta).toBe(3);
+    });
+
+    it('returns pendingSignatures from signature.count', async () => {
+      asMock(mockPrisma._scoped.case.count).mockResolvedValue(0);
+      asMock(mockPrisma._scoped.signature.count).mockResolvedValue(4);
+
+      const result = await service.getStats('tenant-a');
+
+      expect(result.pendingSignatures).toBe(4);
+    });
+
+    it('calls forTenant with the correct tenantId', async () => {
+      asMock(mockPrisma._scoped.case.count).mockResolvedValue(0);
+      asMock(mockPrisma._scoped.signature.count).mockResolvedValue(0);
+
+      await service.getStats('tenant-b');
+
+      expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-b');
+    });
+  });
+
   describe('findOne', () => {
     it('returns case when found', async () => {
       const found = { id: 'case-1', familyContacts: [], tasks: [] };

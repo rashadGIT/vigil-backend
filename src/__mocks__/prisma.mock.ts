@@ -10,6 +10,11 @@ export function makeScopedClient() {
       updateMany: jest.fn(),
       delete: jest.fn(),
       deleteMany: jest.fn(),
+      count: jest.fn(),
+    },
+    signature: {
+      count: jest.fn(),
+      findMany: jest.fn(),
     },
     task: {
       create: jest.fn(),
@@ -40,6 +45,7 @@ export function makeScopedClient() {
     tenant: {
       findFirst: jest.fn(),
       findUnique: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
     },
   };
 }
@@ -69,6 +75,7 @@ export function createMockPrisma() {
     },
     tenant: {
       findUnique: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
     },
     // expose scoped and txClient for per-test spy assertions
     _scoped: scoped,
