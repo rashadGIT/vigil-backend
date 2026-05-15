@@ -8,7 +8,9 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('TasksService', () => {
   let service: TasksService;
@@ -35,7 +37,12 @@ describe('TasksService', () => {
   describe('create', () => {
     it('calls forTenant and task.create with correct data', async () => {
       const dto = { title: 'File death certificate' } as any;
-      const expected = { id: 'task-1', tenantId: 'tenant-a', caseId: 'case-1', title: dto.title };
+      const expected = {
+        id: 'task-1',
+        tenantId: 'tenant-a',
+        caseId: 'case-1',
+        title: dto.title,
+      };
       asMock(mockPrisma._scoped.task.create).mockResolvedValue(expected);
 
       const result = await service.create('tenant-a', 'case-1', dto);
@@ -43,7 +50,11 @@ describe('TasksService', () => {
       expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-a');
       expect(mockPrisma._scoped.task.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ tenantId: 'tenant-a', caseId: 'case-1', title: dto.title }),
+          data: expect.objectContaining({
+            tenantId: 'tenant-a',
+            caseId: 'case-1',
+            title: dto.title,
+          }),
         }),
       );
       expect(result).toEqual(expected);
@@ -51,21 +62,27 @@ describe('TasksService', () => {
 
     it('converts dueDate string to Date object', async () => {
       const dto = { title: 'Task with due date', dueDate: '2025-06-01' } as any;
-      asMock(mockPrisma._scoped.task.create).mockResolvedValue({ id: 'task-1' });
+      asMock(mockPrisma._scoped.task.create).mockResolvedValue({
+        id: 'task-1',
+      });
 
       await service.create('tenant-a', 'case-1', dto);
 
-      const callData = asMock(mockPrisma._scoped.task.create).mock.calls[0][0].data;
+      const callData = asMock(mockPrisma._scoped.task.create).mock.calls[0][0]
+        .data;
       expect(callData.dueDate).toBeInstanceOf(Date);
     });
 
     it('sets dueDate to null when not provided', async () => {
       const dto = { title: 'Task without due date' } as any;
-      asMock(mockPrisma._scoped.task.create).mockResolvedValue({ id: 'task-1' });
+      asMock(mockPrisma._scoped.task.create).mockResolvedValue({
+        id: 'task-1',
+      });
 
       await service.create('tenant-a', 'case-1', dto);
 
-      const callData = asMock(mockPrisma._scoped.task.create).mock.calls[0][0].data;
+      const callData = asMock(mockPrisma._scoped.task.create).mock.calls[0][0]
+        .data;
       expect(callData.dueDate).toBeNull();
     });
   });
@@ -100,7 +117,11 @@ describe('TasksService', () => {
       const existing = { id: 'task-1' };
       const dto = { completed: true } as any;
       asMock(mockPrisma._scoped.task.findFirst).mockResolvedValue(existing);
-      asMock(mockPrisma._scoped.task.update).mockResolvedValue({ ...existing, completed: true, completedBy: 'user-1' });
+      asMock(mockPrisma._scoped.task.update).mockResolvedValue({
+        ...existing,
+        completed: true,
+        completedBy: 'user-1',
+      });
 
       const result = await service.update('tenant-a', 'task-1', dto, 'user-1');
 
@@ -117,24 +138,32 @@ describe('TasksService', () => {
       const existing = { id: 'task-1' };
       const dto = { completed: false } as any;
       asMock(mockPrisma._scoped.task.findFirst).mockResolvedValue(existing);
-      asMock(mockPrisma._scoped.task.update).mockResolvedValue({ ...existing, completed: false });
+      asMock(mockPrisma._scoped.task.update).mockResolvedValue({
+        ...existing,
+        completed: false,
+      });
 
       await service.update('tenant-a', 'task-1', dto, 'user-1');
 
-      const callData = asMock(mockPrisma._scoped.task.update).mock.calls[0][0].data;
+      const callData = asMock(mockPrisma._scoped.task.update).mock.calls[0][0]
+        .data;
       expect(callData.completedBy).toBeUndefined();
     });
 
     it('throws NotFoundException when task does not exist', async () => {
       asMock(mockPrisma._scoped.task.findFirst).mockResolvedValue(null);
 
-      await expect(service.update('tenant-a', 'missing', {} as any, 'user-1')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('tenant-a', 'missing', {} as any, 'user-1'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('throws NotFoundException with task id in message', async () => {
       asMock(mockPrisma._scoped.task.findFirst).mockResolvedValue(null);
 
-      await expect(service.update('tenant-a', 'task-99', {} as any, 'user-1')).rejects.toThrow('task-99');
+      await expect(
+        service.update('tenant-a', 'task-99', {} as any, 'user-1'),
+      ).rejects.toThrow('task-99');
     });
   });
 
@@ -154,7 +183,9 @@ describe('TasksService', () => {
     it('throws NotFoundException when task does not exist', async () => {
       asMock(mockPrisma._scoped.task.findFirst).mockResolvedValue(null);
 
-      await expect(service.remove('tenant-a', 'missing')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('tenant-a', 'missing')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

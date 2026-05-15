@@ -12,16 +12,42 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { N8nService } from '../modules/n8n/n8n.service';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 function makeScopedMock() {
   return {
-    case: { create: jest.fn(), findMany: jest.fn(), findFirst: jest.fn(), update: jest.fn(), updateMany: jest.fn(), groupBy: jest.fn() },
-    task: { create: jest.fn(), createMany: jest.fn(), findMany: jest.fn(), findFirst: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
-    familyContact: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), update: jest.fn(), delete: jest.fn() },
+    case: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+      groupBy: jest.fn(),
+    },
+    task: {
+      create: jest.fn(),
+      createMany: jest.fn(),
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+    },
+    familyContact: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
     followUp: { create: jest.fn(), findMany: jest.fn(), updateMany: jest.fn() },
     calendarEvent: { create: jest.fn(), findMany: jest.fn() },
-    tenant: { findFirst: jest.fn(), findUnique: jest.fn(), findUniqueOrThrow: jest.fn() },
+    tenant: {
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
+    },
     auditLog: { create: jest.fn() },
     document: { create: jest.fn(), findMany: jest.fn() },
     user: { create: jest.fn(), findMany: jest.fn() },
@@ -43,7 +69,11 @@ function createIsolationPrisma() {
   });
 
   // $transaction invokes callback with tenant-a scope by default (overridden per-test when needed)
-  const $transaction = jest.fn().mockImplementation(async (cb: (tx: typeof scopeA) => unknown) => cb(scopeA));
+  const $transaction = jest
+    .fn()
+    .mockImplementation(async (cb: (tx: typeof scopeA) => unknown) =>
+      cb(scopeA),
+    );
 
   return {
     forTenant,
@@ -84,7 +114,9 @@ describe('Tenant isolation', () => {
 
   describe('CasesService', () => {
     it('findAll for tenant-a never touches tenant-b scope', async () => {
-      asMock(prisma._scopeA.case.findMany).mockResolvedValue([{ id: 'case-a1', tenantId: 'tenant-a' }]);
+      asMock(prisma._scopeA.case.findMany).mockResolvedValue([
+        { id: 'case-a1', tenantId: 'tenant-a' },
+      ]);
 
       await casesService.findAll('tenant-a', {});
 
@@ -94,7 +126,9 @@ describe('Tenant isolation', () => {
     });
 
     it('findAll for tenant-b never touches tenant-a scope', async () => {
-      asMock(prisma._scopeB.case.findMany).mockResolvedValue([{ id: 'case-b1', tenantId: 'tenant-b' }]);
+      asMock(prisma._scopeB.case.findMany).mockResolvedValue([
+        { id: 'case-b1', tenantId: 'tenant-b' },
+      ]);
 
       await casesService.findAll('tenant-b', {});
 
@@ -105,7 +139,10 @@ describe('Tenant isolation', () => {
 
     it('create stamps the correct tenantId', async () => {
       const dto = { deceasedName: 'Alice Smith', serviceType: 'burial' as any };
-      asMock(prisma._scopeA.case.create).mockResolvedValue({ id: 'case-a2', tenantId: 'tenant-a' });
+      asMock(prisma._scopeA.case.create).mockResolvedValue({
+        id: 'case-a2',
+        tenantId: 'tenant-a',
+      });
       asMock(prisma._scopeA.task.createMany).mockResolvedValue({ count: 0 });
 
       await casesService.create('tenant-a', dto);
@@ -119,8 +156,12 @@ describe('Tenant isolation', () => {
     });
 
     it('concurrent findAll calls use independent scopes without bleed', async () => {
-      asMock(prisma._scopeA.case.findMany).mockResolvedValue([{ id: 'case-a', tenantId: 'tenant-a' }]);
-      asMock(prisma._scopeB.case.findMany).mockResolvedValue([{ id: 'case-b', tenantId: 'tenant-b' }]);
+      asMock(prisma._scopeA.case.findMany).mockResolvedValue([
+        { id: 'case-a', tenantId: 'tenant-a' },
+      ]);
+      asMock(prisma._scopeB.case.findMany).mockResolvedValue([
+        { id: 'case-b', tenantId: 'tenant-b' },
+      ]);
 
       const [resultA, resultB] = await Promise.all([
         casesService.findAll('tenant-a', {}),
@@ -148,14 +189,25 @@ describe('Tenant isolation', () => {
     });
 
     it('create for tenant-b stamps correct tenantId and does not touch tenant-a', async () => {
-      const dto = { firstName: 'Bob', lastName: 'Jones', relationship: 'son', isPrimaryContact: false } as any;
-      asMock(prisma._scopeB.familyContact.create).mockResolvedValue({ id: 'contact-b1', tenantId: 'tenant-b' });
+      const dto = {
+        firstName: 'Bob',
+        lastName: 'Jones',
+        relationship: 'son',
+        isPrimaryContact: false,
+      } as any;
+      asMock(prisma._scopeB.familyContact.create).mockResolvedValue({
+        id: 'contact-b1',
+        tenantId: 'tenant-b',
+      });
 
       await contactsService.create('tenant-b', 'case-b1', dto);
 
       expect(prisma._scopeB.familyContact.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ tenantId: 'tenant-b', caseId: 'case-b1' }),
+          data: expect.objectContaining({
+            tenantId: 'tenant-b',
+            caseId: 'case-b1',
+          }),
         }),
       );
       expect(prisma._scopeA.familyContact.create).not.toHaveBeenCalled();
@@ -164,7 +216,9 @@ describe('Tenant isolation', () => {
 
   describe('TasksService', () => {
     it('findByCase scopes query to the correct tenant', async () => {
-      asMock(prisma._scopeA.task.findMany).mockResolvedValue([{ id: 'task-a1', tenantId: 'tenant-a' }]);
+      asMock(prisma._scopeA.task.findMany).mockResolvedValue([
+        { id: 'task-a1', tenantId: 'tenant-a' },
+      ]);
 
       await tasksService.findByCase('tenant-a', 'case-a1');
 
@@ -180,9 +234,17 @@ describe('Tenant isolation', () => {
         caseId: 'case-b1',
         completed: false,
       });
-      asMock(prisma._scopeB.task.update).mockResolvedValue({ id: 'task-b1', completed: true });
+      asMock(prisma._scopeB.task.update).mockResolvedValue({
+        id: 'task-b1',
+        completed: true,
+      });
 
-      await tasksService.update('tenant-b', 'task-b1', { completed: true }, 'user-b1');
+      await tasksService.update(
+        'tenant-b',
+        'task-b1',
+        { completed: true },
+        'user-b1',
+      );
 
       expect(prisma._scopeB.task.update).toHaveBeenCalledTimes(1);
       expect(prisma._scopeA.task.update).not.toHaveBeenCalled();
@@ -191,8 +253,16 @@ describe('Tenant isolation', () => {
 
   describe('Cross-tenant data leakage', () => {
     it('tenant-a case IDs never appear in tenant-b results', async () => {
-      const caseA = { id: 'case-a-secret', tenantId: 'tenant-a', deceasedName: 'Private Person' };
-      const caseB = { id: 'case-b-public', tenantId: 'tenant-b', deceasedName: 'Another Person' };
+      const caseA = {
+        id: 'case-a-secret',
+        tenantId: 'tenant-a',
+        deceasedName: 'Private Person',
+      };
+      const caseB = {
+        id: 'case-b-public',
+        tenantId: 'tenant-b',
+        deceasedName: 'Another Person',
+      };
 
       asMock(prisma._scopeA.case.findMany).mockResolvedValue([caseA]);
       asMock(prisma._scopeB.case.findMany).mockResolvedValue([caseB]);

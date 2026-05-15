@@ -8,15 +8,17 @@ import { AppModule } from './app.module';
 const sentryDsn = process.env.SENTRY_DSN;
 if (sentryDsn && process.env.NODE_ENV !== 'test') {
   // Dynamic import so Sentry + OpenTelemetry only load when DSN is configured
-  import('@sentry/node').then(({ init }) => {
-    init({
-      dsn: sentryDsn,
-      environment: process.env.NODE_ENV ?? 'development',
-      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+  import('@sentry/node')
+    .then(({ init }) => {
+      init({
+        dsn: sentryDsn,
+        environment: process.env.NODE_ENV ?? 'development',
+        tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+      });
+    })
+    .catch((err: unknown) => {
+      Logger.warn(`Sentry init failed: ${(err as Error).message}`, 'Bootstrap');
     });
-  }).catch((err: unknown) => {
-    Logger.warn(`Sentry init failed: ${(err as Error).message}`, 'Bootstrap');
-  });
 }
 
 async function bootstrap(): Promise<void> {
@@ -42,11 +44,17 @@ async function bootstrap(): Promise<void> {
     origin: [
       'https://app.kelovaapp.com',
       /\.kelovaapp\.com$/,
+      /\.amplifyapp\.com$/,
       'http://localhost:3000',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-dev-user', 'x-kelova-internal-key'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-dev-user',
+      'x-kelova-internal-key',
+    ],
   });
   // Intake endpoint CORS is applied per-route via @Header() in intake.controller.ts
 

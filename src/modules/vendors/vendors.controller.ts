@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -7,7 +15,10 @@ import {
 } from '@nestjs/swagger';
 import { VendorsService } from './vendors.service';
 import { UpsertVendorDto, AssignVendorDto } from './dto/vendor.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 
 @ApiTags('vendors')
@@ -39,7 +50,11 @@ export class VendorsController {
   @ApiResponse({ status: 200, description: 'Vendor updated' })
   @ApiResponse({ status: 404, description: 'Vendor not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  update(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body() dto: UpsertVendorDto) {
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpsertVendorDto,
+  ) {
     return this.service.update(user.tenantId, id, dto);
   }
 
@@ -67,9 +82,15 @@ export class VendorsController {
 
   @Get('cases/:caseId/vendors')
   @ApiOperation({ summary: 'List vendors assigned to a case' })
-  @ApiResponse({ status: 200, description: 'Returns array of vendor assignments' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns array of vendor assignments',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAssignments(@CurrentUser() user: AuthUser, @Param('caseId') caseId: string) {
+  findAssignments(
+    @CurrentUser() user: AuthUser,
+    @Param('caseId') caseId: string,
+  ) {
     return this.service.findAssignmentsByCase(user.tenantId, caseId);
   }
 }

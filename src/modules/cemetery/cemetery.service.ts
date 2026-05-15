@@ -8,7 +8,9 @@ export class CemeteryService {
 
   async upsert(tenantId: string, caseId: string, dto: UpsertCemeteryDto) {
     const scoped = this.prisma.forTenant(tenantId);
-    const existing = await scoped.cemeteryRecord.findFirst({ where: { caseId } });
+    const existing = await scoped.cemeteryRecord.findFirst({
+      where: { caseId },
+    });
 
     const data = {
       cemeteryName: dto.cemeteryName ?? null,
@@ -33,14 +35,19 @@ export class CemeteryService {
     if (existing) {
       return scoped.cemeteryRecord.update({ where: { id: existing.id }, data });
     }
-    return scoped.cemeteryRecord.create({ data: { ...data, tenantId, caseId } });
+    return scoped.cemeteryRecord.create({
+      data: { ...data, tenantId, caseId },
+    });
   }
 
   async findByCase(tenantId: string, caseId: string) {
-    const record = await this.prisma.forTenant(tenantId).cemeteryRecord.findFirst({
-      where: { caseId },
-    });
-    if (!record) throw new NotFoundException(`No cemetery record for case ${caseId}`);
+    const record = await this.prisma
+      .forTenant(tenantId)
+      .cemeteryRecord.findFirst({
+        where: { caseId },
+      });
+    if (!record)
+      throw new NotFoundException(`No cemetery record for case ${caseId}`);
     return record;
   }
 }

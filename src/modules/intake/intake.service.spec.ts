@@ -11,7 +11,9 @@ import { createMockPrisma } from '../../__mocks__/prisma.mock';
 import { N8nEvent } from '../n8n/n8n-events.enum';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 const mockN8n = { trigger: jest.fn().mockResolvedValue(undefined) };
 const mockTaskTemplates = {
@@ -50,25 +52,37 @@ describe('IntakeService', () => {
     it('throws NotFoundException when tenant is not found', async () => {
       asMock(mockPrisma.tenant.findUnique).mockResolvedValue(null);
 
-      await expect(service.submit('unknown-slug', validDto)).rejects.toThrow(NotFoundException);
+      await expect(service.submit('unknown-slug', validDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException when tenant is inactive', async () => {
-      asMock(mockPrisma.tenant.findUnique).mockResolvedValue({ id: 'tenant-a', active: false });
+      asMock(mockPrisma.tenant.findUnique).mockResolvedValue({
+        id: 'tenant-a',
+        active: false,
+      });
 
-      await expect(service.submit('inactive-slug', validDto)).rejects.toThrow(NotFoundException);
+      await expect(service.submit('inactive-slug', validDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws with message containing the slug', async () => {
       asMock(mockPrisma.tenant.findUnique).mockResolvedValue(null);
 
-      await expect(service.submit('bad-slug', validDto)).rejects.toThrow('bad-slug');
+      await expect(service.submit('bad-slug', validDto)).rejects.toThrow(
+        'bad-slug',
+      );
     });
   });
 
   describe('submit — atomic transaction', () => {
     beforeEach(() => {
-      asMock(mockPrisma.tenant.findUnique).mockResolvedValue({ id: 'tenant-a', active: true });
+      asMock(mockPrisma.tenant.findUnique).mockResolvedValue({
+        id: 'tenant-a',
+        active: true,
+      });
       asMock(mockPrisma._tx.case.create).mockResolvedValue({ id: 'case-1' });
       asMock(mockPrisma._tx.familyContact.create).mockResolvedValue({});
       asMock(mockPrisma._tx.task.createMany).mockResolvedValue({ count: 3 });
@@ -130,7 +144,10 @@ describe('IntakeService', () => {
 
   describe('submit — n8n INTAKE_NOTIFY', () => {
     beforeEach(() => {
-      asMock(mockPrisma.tenant.findUnique).mockResolvedValue({ id: 'tenant-a', active: true });
+      asMock(mockPrisma.tenant.findUnique).mockResolvedValue({
+        id: 'tenant-a',
+        active: true,
+      });
       asMock(mockPrisma._tx.case.create).mockResolvedValue({ id: 'case-1' });
       asMock(mockPrisma._tx.familyContact.create).mockResolvedValue({});
       asMock(mockPrisma._tx.task.createMany).mockResolvedValue({ count: 3 });
@@ -151,7 +168,9 @@ describe('IntakeService', () => {
     it('does NOT call n8n.trigger when transaction throws', async () => {
       asMock(mockPrisma.$transaction).mockRejectedValue(new Error('DB error'));
 
-      await expect(service.submit('sunrise', validDto)).rejects.toThrow('DB error');
+      await expect(service.submit('sunrise', validDto)).rejects.toThrow(
+        'DB error',
+      );
       await new Promise((r) => setTimeout(r, 0));
 
       expect(mockN8n.trigger).not.toHaveBeenCalled();

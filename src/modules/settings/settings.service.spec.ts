@@ -8,7 +8,9 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('SettingsService', () => {
   let service: SettingsService;
@@ -50,29 +52,41 @@ describe('SettingsService', () => {
     });
 
     it('calls tenant.findUnique with tenantId', async () => {
-      bareTenant.findUnique.mockResolvedValue({ name: 'Test Home', googleReviewUrl: null });
+      bareTenant.findUnique.mockResolvedValue({
+        name: 'Test Home',
+        googleReviewUrl: null,
+      });
 
       await service.get('tenant-a');
 
-      expect(bareTenant.findUnique).toHaveBeenCalledWith({ where: { id: 'tenant-a' } });
+      expect(bareTenant.findUnique).toHaveBeenCalledWith({
+        where: { id: 'tenant-a' },
+      });
     });
 
     it('throws NotFoundException when tenant does not exist', async () => {
       bareTenant.findUnique.mockResolvedValue(null);
 
-      await expect(service.get('missing-tenant')).rejects.toThrow(NotFoundException);
+      await expect(service.get('missing-tenant')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException with "Tenant not found" message', async () => {
       bareTenant.findUnique.mockResolvedValue(null);
 
-      await expect(service.get('missing-tenant')).rejects.toThrow('Tenant not found');
+      await expect(service.get('missing-tenant')).rejects.toThrow(
+        'Tenant not found',
+      );
     });
   });
 
   describe('update', () => {
     it('updates name when provided', async () => {
-      bareTenant.update.mockResolvedValue({ name: 'New Name', googleReviewUrl: null });
+      bareTenant.update.mockResolvedValue({
+        name: 'New Name',
+        googleReviewUrl: null,
+      });
 
       await service.update('tenant-a', { name: 'New Name' });
 
@@ -85,19 +99,29 @@ describe('SettingsService', () => {
     });
 
     it('updates googleReviewUrl when provided', async () => {
-      bareTenant.update.mockResolvedValue({ name: 'Same Name', googleReviewUrl: 'https://g.co/r/new' });
+      bareTenant.update.mockResolvedValue({
+        name: 'Same Name',
+        googleReviewUrl: 'https://g.co/r/new',
+      });
 
-      await service.update('tenant-a', { googleReviewUrl: 'https://g.co/r/new' });
+      await service.update('tenant-a', {
+        googleReviewUrl: 'https://g.co/r/new',
+      });
 
       expect(bareTenant.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ googleReviewUrl: 'https://g.co/r/new' }),
+          data: expect.objectContaining({
+            googleReviewUrl: 'https://g.co/r/new',
+          }),
         }),
       );
     });
 
     it('omits undefined fields from update data', async () => {
-      bareTenant.update.mockResolvedValue({ name: 'Name', googleReviewUrl: null });
+      bareTenant.update.mockResolvedValue({
+        name: 'Name',
+        googleReviewUrl: null,
+      });
 
       await service.update('tenant-a', { name: 'Name' });
 
@@ -106,11 +130,17 @@ describe('SettingsService', () => {
     });
 
     it('returns name and googleReviewUrl from updated tenant', async () => {
-      bareTenant.update.mockResolvedValue({ name: 'Updated Name', googleReviewUrl: 'https://g.co/updated' });
+      bareTenant.update.mockResolvedValue({
+        name: 'Updated Name',
+        googleReviewUrl: 'https://g.co/updated',
+      });
 
       const result = await service.update('tenant-a', { name: 'Updated Name' });
 
-      expect(result).toEqual({ name: 'Updated Name', googleReviewUrl: 'https://g.co/updated' });
+      expect(result).toEqual({
+        name: 'Updated Name',
+        googleReviewUrl: 'https://g.co/updated',
+      });
     });
   });
 });

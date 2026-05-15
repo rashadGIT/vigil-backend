@@ -6,7 +6,12 @@ import { CreateNoteDto } from './dto/create-note.dto';
 export class NotesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(tenantId: string, caseId: string, authorId: string, dto: CreateNoteDto) {
+  async create(
+    tenantId: string,
+    caseId: string,
+    authorId: string,
+    dto: CreateNoteDto,
+  ) {
     // Verify case belongs to tenant before creating note
     const caseExists = await this.prisma.forTenant(tenantId).case.findFirst({
       where: { id: caseId, deletedAt: null },

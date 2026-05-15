@@ -16,7 +16,10 @@ export class ObituariesService {
     const primary = kase.familyContacts[0];
     const age =
       kase.deceasedDob && kase.deceasedDod
-        ? Math.floor((kase.deceasedDod.getTime() - kase.deceasedDob.getTime()) / (365.25 * 24 * 3600 * 1000))
+        ? Math.floor(
+            (kase.deceasedDod.getTime() - kase.deceasedDob.getTime()) /
+              (365.25 * 24 * 3600 * 1000),
+          )
         : null;
     const firstName = kase.deceasedName.split(' ')[0];
     const text =
@@ -34,12 +37,19 @@ export class ObituariesService {
   }
 
   async findByCase(tenantId: string, caseId: string) {
-    const ob = await this.prisma.forTenant(tenantId).obituary.findFirst({ where: { caseId } });
+    const ob = await this.prisma
+      .forTenant(tenantId)
+      .obituary.findFirst({ where: { caseId } });
     if (!ob) throw new NotFoundException(`No obituary for case ${caseId}`);
     return ob;
   }
 
-  async update(tenantId: string, caseId: string, draftText: string, status?: string) {
+  async update(
+    tenantId: string,
+    caseId: string,
+    draftText: string,
+    status?: string,
+  ) {
     return this.prisma.forTenant(tenantId).obituary.update({
       where: { caseId },
       data: { draftText, ...(status ? { status } : {}) },

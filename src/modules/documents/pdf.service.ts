@@ -18,7 +18,9 @@ export class PdfService {
     if (!kase) throw new NotFoundException(`Case ${caseId} not found`);
 
     return this.renderToBuffer((doc) => {
-      doc.fontSize(18).text('General Price List (FTC Funeral Rule)', { align: 'center' });
+      doc
+        .fontSize(18)
+        .text('General Price List (FTC Funeral Rule)', { align: 'center' });
       doc.moveDown();
       doc.fontSize(12).text(`Prepared for: ${kase.deceasedName}`);
       doc.text(`Service Type: ${kase.serviceType}`);
@@ -36,17 +38,24 @@ export class PdfService {
         );
       }
       doc.moveDown();
-      doc.fontSize(12).text(`Subtotal: $${subtotal.toFixed(2)}`, { align: 'right' });
+      doc
+        .fontSize(12)
+        .text(`Subtotal: $${subtotal.toFixed(2)}`, { align: 'right' });
 
       doc.moveDown(2);
-      doc.fontSize(9).text(
-        'This is a General Price List. Per FTC Funeral Rule, prices are subject to change; you will receive an itemized statement of goods and services selected.',
-        { align: 'left' },
-      );
+      doc
+        .fontSize(9)
+        .text(
+          'This is a General Price List. Per FTC Funeral Rule, prices are subject to change; you will receive an itemized statement of goods and services selected.',
+          { align: 'left' },
+        );
     });
   }
 
-  async generateServiceProgram(caseId: string, tenantId: string): Promise<Buffer> {
+  async generateServiceProgram(
+    caseId: string,
+    tenantId: string,
+  ): Promise<Buffer> {
     const scoped = this.prisma.forTenant(tenantId);
     const kase = await scoped.case.findFirst({
       where: { id: caseId },
@@ -59,10 +68,12 @@ export class PdfService {
       doc.moveDown();
       doc.fontSize(18).text(kase.deceasedName, { align: 'center' });
       if (kase.deceasedDob && kase.deceasedDod) {
-        doc.fontSize(12).text(
-          `${kase.deceasedDob.toDateString()} – ${kase.deceasedDod.toDateString()}`,
-          { align: 'center' },
-        );
+        doc
+          .fontSize(12)
+          .text(
+            `${kase.deceasedDob.toDateString()} – ${kase.deceasedDod.toDateString()}`,
+            { align: 'center' },
+          );
       }
       doc.moveDown(2);
       const service = kase.calendarEvents[0];
@@ -75,7 +86,9 @@ export class PdfService {
     });
   }
 
-  private renderToBuffer(compose: (doc: PDFKit.PDFDocument) => void): Promise<Buffer> {
+  private renderToBuffer(
+    compose: (doc: PDFKit.PDFDocument) => void,
+  ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({ size: 'LETTER', margin: 50 });
@@ -86,7 +99,7 @@ export class PdfService {
         compose(doc);
         doc.end();
       } catch (err) {
-        reject(err);
+        reject(err instanceof Error ? err : new Error(String(err)));
       }
     });
   }

@@ -32,8 +32,15 @@ export class TasksService {
     });
   }
 
-  async update(tenantId: string, id: string, dto: UpdateTaskDto, userId: string) {
-    const existing = await this.prisma.forTenant(tenantId).task.findFirst({ where: { id } });
+  async update(
+    tenantId: string,
+    id: string,
+    dto: UpdateTaskDto,
+    userId: string,
+  ) {
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .task.findFirst({ where: { id } });
     if (!existing) throw new NotFoundException(`Task ${id} not found`);
     return this.prisma.forTenant(tenantId).task.update({
       where: { id },
@@ -46,7 +53,9 @@ export class TasksService {
   }
 
   async remove(tenantId: string, id: string) {
-    const existing = await this.prisma.forTenant(tenantId).task.findFirst({ where: { id } });
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .task.findFirst({ where: { id } });
     if (!existing) throw new NotFoundException(`Task ${id} not found`);
     return this.prisma.forTenant(tenantId).task.delete({ where: { id } });
   }

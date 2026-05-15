@@ -8,7 +8,10 @@ import {
 import { CremationAuthService } from './cremation-auth.service';
 import { CreateCremationAuthDto } from './dto/create-cremation-auth.dto';
 import { UpdateCremationAuthDto } from './dto/update-cremation-auth.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('cremation-auth')
 @ApiBearerAuth()
@@ -19,7 +22,10 @@ export class CremationAuthController {
   @Post()
   @ApiOperation({ summary: 'Create cremation authorization record for a case' })
   @ApiResponse({ status: 201, description: 'Cremation authorization created' })
-  @ApiResponse({ status: 409, description: 'Cremation authorization already exists for this case' })
+  @ApiResponse({
+    status: 409,
+    description: 'Cremation authorization already exists for this case',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(
     @CurrentUser() user: AuthUser,
@@ -31,7 +37,10 @@ export class CremationAuthController {
 
   @Get()
   @ApiOperation({ summary: 'Get cremation authorization record for a case' })
-  @ApiResponse({ status: 200, description: 'Returns cremation authorization record' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns cremation authorization record',
+  })
   @ApiResponse({ status: 404, description: 'No cremation authorization found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   get(@CurrentUser() user: AuthUser, @Param('caseId') caseId: string) {
@@ -52,9 +61,18 @@ export class CremationAuthController {
   }
 
   @Post('clear')
-  @ApiOperation({ summary: 'Mark waiting period as cleared — verifies elapsed time before proceeding' })
-  @ApiResponse({ status: 201, description: 'Waiting period cleared, status set to cleared' })
-  @ApiResponse({ status: 400, description: 'Waiting period not yet elapsed or authorization missing' })
+  @ApiOperation({
+    summary:
+      'Mark waiting period as cleared — verifies elapsed time before proceeding',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Waiting period cleared, status set to cleared',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Waiting period not yet elapsed or authorization missing',
+  })
   @ApiResponse({ status: 404, description: 'No cremation authorization found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   clear(@CurrentUser() user: AuthUser, @Param('caseId') caseId: string) {
@@ -62,9 +80,15 @@ export class CremationAuthController {
   }
 
   @Post('performed')
-  @ApiOperation({ summary: 'Mark cremation as performed — requires waiting period to be cleared first' })
+  @ApiOperation({
+    summary:
+      'Mark cremation as performed — requires waiting period to be cleared first',
+  })
   @ApiResponse({ status: 201, description: 'Cremation marked as performed' })
-  @ApiResponse({ status: 400, description: 'Waiting period has not been cleared' })
+  @ApiResponse({
+    status: 400,
+    description: 'Waiting period has not been cleared',
+  })
   @ApiResponse({ status: 404, description: 'No cremation authorization found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   performed(@CurrentUser() user: AuthUser, @Param('caseId') caseId: string) {

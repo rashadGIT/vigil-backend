@@ -41,9 +41,11 @@ export class MerchandiseService {
   }
 
   async findOne(tenantId: string, id: string) {
-    const item = await this.prisma.forTenant(tenantId).merchandiseItem.findFirst({
-      where: { id },
-    });
+    const item = await this.prisma
+      .forTenant(tenantId)
+      .merchandiseItem.findFirst({
+        where: { id },
+      });
     if (!item) throw new NotFoundException(`Merchandise item ${id} not found`);
     return item;
   }
@@ -58,9 +60,11 @@ export class MerchandiseService {
 
   async remove(tenantId: string, id: string) {
     await this.findOne(tenantId, id);
-    const hasSelections = await this.prisma.forTenant(tenantId).caseMerchandise.count({
-      where: { itemId: id },
-    });
+    const hasSelections = await this.prisma
+      .forTenant(tenantId)
+      .caseMerchandise.count({
+        where: { itemId: id },
+      });
     if (hasSelections > 0) {
       // Soft delete — mark out of stock instead of hard delete
       return this.prisma.forTenant(tenantId).merchandiseItem.update({
@@ -73,7 +77,11 @@ export class MerchandiseService {
     });
   }
 
-  async addToCase(tenantId: string, caseId: string, dto: AddCaseMerchandiseDto) {
+  async addToCase(
+    tenantId: string,
+    caseId: string,
+    dto: AddCaseMerchandiseDto,
+  ) {
     const item = await this.findOne(tenantId, dto.itemId);
     if (!item.inStock) {
       throw new BadRequestException(`Item ${dto.itemId} is not in stock`);
@@ -100,11 +108,15 @@ export class MerchandiseService {
   }
 
   async removeFromCase(tenantId: string, caseId: string, selectionId: string) {
-    const selection = await this.prisma.forTenant(tenantId).caseMerchandise.findFirst({
-      where: { id: selectionId, caseId },
-    });
+    const selection = await this.prisma
+      .forTenant(tenantId)
+      .caseMerchandise.findFirst({
+        where: { id: selectionId, caseId },
+      });
     if (!selection) {
-      throw new NotFoundException(`Selection ${selectionId} not found on case ${caseId}`);
+      throw new NotFoundException(
+        `Selection ${selectionId} not found on case ${caseId}`,
+      );
     }
     return this.prisma.forTenant(tenantId).caseMerchandise.delete({
       where: { id: selectionId },

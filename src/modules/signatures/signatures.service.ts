@@ -71,17 +71,25 @@ export class SignaturesService {
    * Finalize signature — requires prior intent confirmation. Captures IP,
    * document hash, signature data. Writes AuditLog via interceptor on return.
    */
-  async sign(token: string, dto: SignDto, ipAddress: string): Promise<{ ok: true; signatureId: string }> {
+  async sign(
+    token: string,
+    dto: SignDto,
+    ipAddress: string,
+  ): Promise<{ ok: true; signatureId: string }> {
     const sig = await this.findByToken(token);
     if (!sig.checkboxConfirmedAt) {
-      throw new BadRequestException('Intent checkbox must be confirmed before signing');
+      throw new BadRequestException(
+        'Intent checkbox must be confirmed before signing',
+      );
     }
     if (!dto.intentConfirmed) {
       throw new BadRequestException('intentConfirmed must be true');
     }
 
     // Compute document hash of the signature payload for the audit trail
-    const documentHash = createHash('sha256').update(dto.signatureData).digest('hex');
+    const documentHash = createHash('sha256')
+      .update(dto.signatureData)
+      .digest('hex');
 
     await this.prisma.signature.update({
       where: { id: sig.id },
@@ -108,12 +116,17 @@ export class SignaturesService {
 
     // Generate and store PDF receipt (SIGN-04)
     try {
-      const receiptBuf = await this.pdfService.generateServiceProgram(sig.caseId, sig.tenantId);
+      const receiptBuf = await this.pdfService.generateServiceProgram(
+        sig.caseId,
+        sig.tenantId,
+      );
       const s3Key = `${sig.tenantId}/signatures/${sig.id}-receipt.pdf`;
       await this.s3Service.uploadBuffer(s3Key, receiptBuf, 'application/pdf');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`PDF receipt generation failed for signature ${sig.id}: ${msg}`);
+      this.logger.warn(
+        `PDF receipt generation failed for signature ${sig.id}: ${msg}`,
+      );
     }
 
     return { ok: true, signatureId: sig.id };

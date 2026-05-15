@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -9,7 +17,10 @@ import {
 import { PreneedService } from './preneed.service';
 import { CreatePreneedDto } from './dto/create-preneed.dto';
 import { UpdatePreneedDto } from './dto/update-preneed.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('preneed')
 @ApiBearerAuth()
@@ -26,7 +37,11 @@ export class PreneedController {
 
   @Get()
   @ApiOperation({ summary: 'List pre-need arrangements' })
-  @ApiQuery({ name: 'status', required: false, description: 'active | converted | cancelled' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'active | converted | cancelled',
+  })
   findAll(@CurrentUser() user: AuthUser, @Query('status') status?: string) {
     return this.preneedService.findAll(user.tenantId, status);
   }
@@ -49,7 +64,9 @@ export class PreneedController {
   }
 
   @Post(':id/convert')
-  @ApiOperation({ summary: 'Convert a pre-need arrangement to an at-need case' })
+  @ApiOperation({
+    summary: 'Convert a pre-need arrangement to an at-need case',
+  })
   @ApiResponse({ status: 201, description: 'Returns { arrangement, case }' })
   @ApiResponse({ status: 400, description: 'Already converted or cancelled' })
   @ApiResponse({ status: 404 })

@@ -8,7 +8,10 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InviteUserDto } from './dto/invite-user.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 
 @ApiTags('users')
@@ -27,7 +30,10 @@ export class UsersController {
 
   @Roles('funeral_director')
   @Post()
-  @ApiOperation({ summary: 'Create a new staff user in Cognito and the database (funeral director only)' })
+  @ApiOperation({
+    summary:
+      'Create a new staff user in Cognito and the database (funeral director only)',
+  })
   @ApiResponse({ status: 201, description: 'User created' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateUserDto) {
@@ -36,7 +42,10 @@ export class UsersController {
 
   @Roles('funeral_director')
   @Post('invite')
-  @ApiOperation({ summary: 'Invite a staff member by email with a branded welcome email (funeral director only)' })
+  @ApiOperation({
+    summary:
+      'Invite a staff member by email with a branded welcome email (funeral director only)',
+  })
   @ApiResponse({ status: 201, description: 'User invited and email sent' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
   invite(@CurrentUser() user: AuthUser, @Body() dto: InviteUserDto) {

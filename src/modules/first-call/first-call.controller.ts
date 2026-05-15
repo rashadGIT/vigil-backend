@@ -8,7 +8,10 @@ import {
 import { FirstCallService } from './first-call.service';
 import { CreateFirstCallDto } from './dto/create-first-call.dto';
 import { UpdateFirstCallDto } from './dto/update-first-call.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('first-call')
 @ApiBearerAuth()
@@ -19,7 +22,10 @@ export class FirstCallController {
   @Post()
   @ApiOperation({ summary: 'Create first call / removal log for a case' })
   @ApiResponse({ status: 201, description: 'First call record created' })
-  @ApiResponse({ status: 409, description: 'First call record already exists for this case' })
+  @ApiResponse({
+    status: 409,
+    description: 'First call record already exists for this case',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(
     @CurrentUser() user: AuthUser,

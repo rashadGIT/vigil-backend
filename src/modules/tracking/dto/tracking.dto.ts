@@ -21,7 +21,11 @@ export class TrackingDto {
   @IsIn(TRACKING_STATUSES)
   status!: string;
 
-  @ApiProperty({ description: 'Physical location description', example: 'Preparation room B', required: false })
+  @ApiProperty({
+    description: 'Physical location description',
+    example: 'Preparation room B',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   location?: string;

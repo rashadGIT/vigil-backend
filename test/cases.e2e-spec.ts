@@ -11,9 +11,19 @@ function createCasesPrismaMock() {
   const scopedClient = {
     case: {
       findMany: jest.fn().mockResolvedValue([]),
-      findFirst: jest.fn().mockResolvedValue({ id: 'case-1', status: CaseStatus.new, deletedAt: null }),
-      create: jest.fn().mockResolvedValue({ id: 'case-new', tenantId: 'tenant-a', status: CaseStatus.new }),
-      update: jest.fn().mockResolvedValue({ id: 'case-1', status: CaseStatus.in_progress }),
+      findFirst: jest.fn().mockResolvedValue({
+        id: 'case-1',
+        status: CaseStatus.new,
+        deletedAt: null,
+      }),
+      create: jest.fn().mockResolvedValue({
+        id: 'case-new',
+        tenantId: 'tenant-a',
+        status: CaseStatus.new,
+      }),
+      update: jest
+        .fn()
+        .mockResolvedValue({ id: 'case-1', status: CaseStatus.in_progress }),
     },
     task: { findMany: jest.fn().mockResolvedValue([]) },
   };
@@ -34,7 +44,9 @@ describe('Cases API — with DEV_AUTH_BYPASS (contract)', () => {
 
   beforeAll(async () => {
     process.env.DEV_AUTH_BYPASS = 'true';
-    process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://vigil:vigil@localhost:5432/vigil_dev';
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL ||
+      'postgresql://vigil:vigil@localhost:5432/vigil_dev';
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -43,7 +55,9 @@ describe('Cases API — with DEV_AUTH_BYPASS (contract)', () => {
       .compile();
 
     app = moduleRef.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    );
     await app.init();
   });
 
@@ -75,7 +89,9 @@ describe('Cases API — auth guard rejection (contract)', () => {
   beforeAll(async () => {
     // DEV_AUTH_BYPASS must be off (or absent) to test auth rejection
     delete process.env.DEV_AUTH_BYPASS;
-    process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://vigil:vigil@localhost:5432/vigil_dev';
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL ||
+      'postgresql://vigil:vigil@localhost:5432/vigil_dev';
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -84,7 +100,9 @@ describe('Cases API — auth guard rejection (contract)', () => {
       .compile();
 
     app = moduleRef.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    );
     await app.init();
   });
 

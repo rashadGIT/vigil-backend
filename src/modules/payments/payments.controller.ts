@@ -7,7 +7,10 @@ import {
 } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { UpsertPaymentDto } from './dto/upsert-payment.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('payments')
 @ApiBearerAuth()

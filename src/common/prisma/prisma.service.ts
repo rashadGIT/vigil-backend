@@ -1,11 +1,19 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 // Models that do NOT have a tenantId column — forTenant() must skip them
 const UNSCOPED_MODELS = new Set<string>(['Tenant']);
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(PrismaService.name);
 
   async onModuleInit(): Promise<void> {
@@ -27,7 +35,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    */
   forTenant(tenantId: string) {
     if (!tenantId) {
-      throw new Error('forTenant() called without tenantId — refuse to run unscoped query');
+      throw new Error(
+        'forTenant() called without tenantId — refuse to run unscoped query',
+      );
     }
     return this.$extends({
       query: {
@@ -38,14 +48,29 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             }
             const a = args as Record<string, unknown>;
             if ('where' in a && a.where && typeof a.where === 'object') {
-              a.where = { ...(a.where as object), tenantId };
+              a.where = { ...a.where, tenantId };
             } else if (
-              ['findFirst', 'findMany', 'findUnique', 'update', 'updateMany', 'delete', 'deleteMany', 'count', 'aggregate'].includes(operation)
+              [
+                'findFirst',
+                'findMany',
+                'findUnique',
+                'update',
+                'updateMany',
+                'delete',
+                'deleteMany',
+                'count',
+                'aggregate',
+              ].includes(operation)
             ) {
               a.where = { tenantId };
             }
-            if ('data' in a && a.data && !Array.isArray(a.data) && typeof a.data === 'object') {
-              a.data = { ...(a.data as object), tenantId };
+            if (
+              'data' in a &&
+              a.data &&
+              !Array.isArray(a.data) &&
+              typeof a.data === 'object'
+            ) {
+              a.data = { ...a.data, tenantId };
             }
             return query(args);
           },

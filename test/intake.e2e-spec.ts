@@ -11,7 +11,12 @@ function createIntakePrismaMock() {
   const VALID_TENANT_ID = 'tenant-a';
 
   const txClient = {
-    case: { create: jest.fn().mockResolvedValue({ id: 'case-generated-id', tenantId: VALID_TENANT_ID }) },
+    case: {
+      create: jest.fn().mockResolvedValue({
+        id: 'case-generated-id',
+        tenantId: VALID_TENANT_ID,
+      }),
+    },
     familyContact: { create: jest.fn().mockResolvedValue({}) },
     task: { createMany: jest.fn().mockResolvedValue({ count: 3 }) },
     calendarEvent: { create: jest.fn().mockResolvedValue({}) },
@@ -19,12 +24,21 @@ function createIntakePrismaMock() {
 
   return {
     tenant: {
-      findUnique: jest.fn().mockImplementation(({ where: { slug } }: { where: { slug: string } }) => {
-        if (slug === 'sunrise') return Promise.resolve({ id: VALID_TENANT_ID, active: true });
-        return Promise.resolve(null);
-      }),
+      findUnique: jest
+        .fn()
+        .mockImplementation(
+          ({ where: { slug } }: { where: { slug: string } }) => {
+            if (slug === 'sunrise')
+              return Promise.resolve({ id: VALID_TENANT_ID, active: true });
+            return Promise.resolve(null);
+          },
+        ),
     },
-    $transaction: jest.fn().mockImplementation(async (cb: (tx: typeof txClient) => unknown) => cb(txClient)),
+    $transaction: jest
+      .fn()
+      .mockImplementation(async (cb: (tx: typeof txClient) => unknown) =>
+        cb(txClient),
+      ),
     forTenant: jest.fn().mockReturnValue({}),
   };
 }
@@ -35,16 +49,25 @@ describe('POST /intake/:slug (contract)', () => {
 
   beforeAll(async () => {
     process.env.DEV_AUTH_BYPASS = 'true';
-    process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://vigil:vigil@localhost:5432/vigil_dev';
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL ||
+      'postgresql://vigil:vigil@localhost:5432/vigil_dev';
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(PrismaService)
-      .useFactory({ factory: () => { prismaMock = createIntakePrismaMock(); return prismaMock; } })
+      .useFactory({
+        factory: () => {
+          prismaMock = createIntakePrismaMock();
+          return prismaMock;
+        },
+      })
       .compile();
 
     app = moduleRef.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    );
     await app.init();
   });
 

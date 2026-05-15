@@ -18,7 +18,11 @@ export class AuthService {
     });
   }
 
-  async login(email: string, password: string, response: Response): Promise<{ accessToken: string }> {
+  async login(
+    email: string,
+    password: string,
+    response: Response,
+  ): Promise<{ accessToken: string }> {
     try {
       const result = await this.client.send(
         new InitiateAuthCommand({
@@ -59,7 +63,9 @@ export class AuthService {
 
   async logout(accessToken: string, response: Response): Promise<{ ok: true }> {
     try {
-      await this.client.send(new GlobalSignOutCommand({ AccessToken: accessToken }));
+      await this.client.send(
+        new GlobalSignOutCommand({ AccessToken: accessToken }),
+      );
     } catch (err) {
       this.logger.warn(`Logout swallowed error: ${(err as Error).message}`);
     }
@@ -73,7 +79,8 @@ export class AuthService {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      domain: process.env.NODE_ENV === 'production' ? '.kelovaapp.com' : 'localhost',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.kelovaapp.com' : 'localhost',
       path: '/auth',
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
@@ -84,7 +91,8 @@ export class AuthService {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      domain: process.env.NODE_ENV === 'production' ? '.kelovaapp.com' : 'localhost',
+      domain:
+        process.env.NODE_ENV === 'production' ? '.kelovaapp.com' : 'localhost',
       path: '/',
       // Cognito access tokens live 1 hour; cookie matches
       maxAge: 60 * 60 * 1000,

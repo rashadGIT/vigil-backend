@@ -20,7 +20,10 @@ import { MerchandiseService } from './merchandise.service';
 import { CreateMerchandiseItemDto } from './dto/create-merchandise-item.dto';
 import { UpdateMerchandiseItemDto } from './dto/update-merchandise-item.dto';
 import { AddCaseMerchandiseDto } from './dto/add-case-merchandise.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('merchandise')
 @ApiBearerAuth()
@@ -45,7 +48,11 @@ export class MerchandiseController {
     @Query('inStock') inStock?: string,
   ) {
     const inStockBool = inStock === undefined ? undefined : inStock === 'true';
-    return this.merchandiseService.findAll(user.tenantId, category, inStockBool);
+    return this.merchandiseService.findAll(
+      user.tenantId,
+      category,
+      inStockBool,
+    );
   }
 
   @Get(':id')
@@ -66,7 +73,9 @@ export class MerchandiseController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remove a catalog item (soft if in use, hard otherwise)' })
+  @ApiOperation({
+    summary: 'Remove a catalog item (soft if in use, hard otherwise)',
+  })
   remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.merchandiseService.remove(user.tenantId, id);
   }
@@ -102,6 +111,10 @@ export class CaseMerchandiseController {
     @Param('caseId') caseId: string,
     @Param('selectionId') selectionId: string,
   ) {
-    return this.merchandiseService.removeFromCase(user.tenantId, caseId, selectionId);
+    return this.merchandiseService.removeFromCase(
+      user.tenantId,
+      caseId,
+      selectionId,
+    );
   }
 }

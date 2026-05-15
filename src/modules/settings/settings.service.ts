@@ -7,7 +7,9 @@ export class SettingsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async get(tenantId: string) {
-    const tenant = await this.prisma.tenant.findUnique({ where: { id: tenantId } });
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+    });
     if (!tenant) throw new NotFoundException('Tenant not found');
     return { name: tenant.name, googleReviewUrl: tenant.googleReviewUrl };
   }
@@ -17,7 +19,9 @@ export class SettingsService {
       where: { id: tenantId },
       data: {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
-        ...(dto.googleReviewUrl !== undefined ? { googleReviewUrl: dto.googleReviewUrl } : {}),
+        ...(dto.googleReviewUrl !== undefined
+          ? { googleReviewUrl: dto.googleReviewUrl }
+          : {}),
       },
     });
     return { name: tenant.name, googleReviewUrl: tenant.googleReviewUrl };

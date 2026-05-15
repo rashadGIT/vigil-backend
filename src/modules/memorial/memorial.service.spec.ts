@@ -8,12 +8,18 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('MemorialService', () => {
   let service: MemorialService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
-  let scopedMemorialPage: { create: jest.Mock; findFirst: jest.Mock; update: jest.Mock };
+  let scopedMemorialPage: {
+    create: jest.Mock;
+    findFirst: jest.Mock;
+    update: jest.Mock;
+  };
   let bareMemorialPage: { findUnique: jest.Mock };
 
   beforeEach(async () => {
@@ -46,18 +52,25 @@ describe('MemorialService', () => {
     it('throws NotFoundException when case does not exist', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
-      await expect(service.create('tenant-a', 'case-1', {})).rejects.toThrow(NotFoundException);
+      await expect(service.create('tenant-a', 'case-1', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException containing the caseId', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
-      await expect(service.create('tenant-a', 'case-99', {})).rejects.toThrow('case-99');
+      await expect(service.create('tenant-a', 'case-99', {})).rejects.toThrow(
+        'case-99',
+      );
     });
 
     it('creates memorial page with slug derived from deceased name and caseId', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(caseRecord);
-      scopedMemorialPage.create.mockResolvedValue({ id: 'mem-1', slug: 'john-doe-se-1' });
+      scopedMemorialPage.create.mockResolvedValue({
+        id: 'mem-1',
+        slug: 'john-doe-se-1',
+      });
 
       await service.create('tenant-a', 'case-1', {});
 
@@ -74,7 +87,10 @@ describe('MemorialService', () => {
 
     it('sets published to false by default', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(caseRecord);
-      scopedMemorialPage.create.mockResolvedValue({ id: 'mem-1', published: false });
+      scopedMemorialPage.create.mockResolvedValue({
+        id: 'mem-1',
+        published: false,
+      });
 
       await service.create('tenant-a', 'case-1', {});
 
@@ -84,17 +100,25 @@ describe('MemorialService', () => {
 
     it('throws ConflictException on Prisma unique constraint violation (P2002)', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(caseRecord);
-      const uniqueErr = Object.assign(new Error('Unique constraint'), { code: 'P2002' });
+      const uniqueErr = Object.assign(new Error('Unique constraint'), {
+        code: 'P2002',
+      });
       scopedMemorialPage.create.mockRejectedValue(uniqueErr);
 
-      await expect(service.create('tenant-a', 'case-1', {})).rejects.toThrow(ConflictException);
+      await expect(service.create('tenant-a', 'case-1', {})).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('re-throws non-unique errors', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(caseRecord);
-      scopedMemorialPage.create.mockRejectedValue(new Error('DB connection failed'));
+      scopedMemorialPage.create.mockRejectedValue(
+        new Error('DB connection failed'),
+      );
 
-      await expect(service.create('tenant-a', 'case-1', {})).rejects.toThrow('DB connection failed');
+      await expect(service.create('tenant-a', 'case-1', {})).rejects.toThrow(
+        'DB connection failed',
+      );
     });
   });
 
@@ -102,13 +126,21 @@ describe('MemorialService', () => {
     it('throws NotFoundException when memorial page does not exist', async () => {
       bareMemorialPage.findUnique.mockResolvedValue(null);
 
-      await expect(service.getBySlug('unknown-slug')).rejects.toThrow(NotFoundException);
+      await expect(service.getBySlug('unknown-slug')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException when page exists but is not published', async () => {
-      bareMemorialPage.findUnique.mockResolvedValue({ id: 'mem-1', published: false, slug: 'john-doe-abc123' });
+      bareMemorialPage.findUnique.mockResolvedValue({
+        id: 'mem-1',
+        published: false,
+        slug: 'john-doe-abc123',
+      });
 
-      await expect(service.getBySlug('john-doe-abc123')).rejects.toThrow(NotFoundException);
+      await expect(service.getBySlug('john-doe-abc123')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('returns page when it exists and is published', async () => {
@@ -125,17 +157,24 @@ describe('MemorialService', () => {
     it('throws NotFoundException when page does not exist', async () => {
       bareMemorialPage.findUnique.mockResolvedValue(null);
 
-      await expect(service.addGuestbookEntry('missing-slug', { name: 'Alice', message: 'Thoughts' })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.addGuestbookEntry('missing-slug', {
+          name: 'Alice',
+          message: 'Thoughts',
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('throws NotFoundException when page is not published', async () => {
-      bareMemorialPage.findUnique.mockResolvedValue({ id: 'mem-1', published: false, guestbookEntries: [] });
+      bareMemorialPage.findUnique.mockResolvedValue({
+        id: 'mem-1',
+        published: false,
+        guestbookEntries: [],
+      });
 
-      await expect(service.addGuestbookEntry('slug', { name: 'Alice', message: 'Hi' })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.addGuestbookEntry('slug', { name: 'Alice', message: 'Hi' }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('appends new entry to existing guestbookEntries array', async () => {
@@ -143,20 +182,40 @@ describe('MemorialService', () => {
         id: 'mem-1',
         published: true,
         tenantId: 'tenant-a',
-        guestbookEntries: [{ name: 'Bob', message: 'RIP', createdAt: '2025-01-01T00:00:00.000Z' }],
+        guestbookEntries: [
+          {
+            name: 'Bob',
+            message: 'RIP',
+            createdAt: '2025-01-01T00:00:00.000Z',
+          },
+        ],
       };
       bareMemorialPage.findUnique.mockResolvedValue(page);
-      scopedMemorialPage.update.mockResolvedValue({ ...page, guestbookEntries: [...page.guestbookEntries, {}] });
+      scopedMemorialPage.update.mockResolvedValue({
+        ...page,
+        guestbookEntries: [...page.guestbookEntries, {}],
+      });
 
-      await service.addGuestbookEntry('slug', { name: 'Alice', message: 'Condolences' });
+      await service.addGuestbookEntry('slug', {
+        name: 'Alice',
+        message: 'Condolences',
+      });
 
       const callData = scopedMemorialPage.update.mock.calls[0][0].data;
       expect(callData.guestbookEntries).toHaveLength(2);
-      expect(callData.guestbookEntries[1]).toMatchObject({ name: 'Alice', message: 'Condolences' });
+      expect(callData.guestbookEntries[1]).toMatchObject({
+        name: 'Alice',
+        message: 'Condolences',
+      });
     });
 
     it('adds createdAt timestamp to the new entry', async () => {
-      const page = { id: 'mem-1', published: true, tenantId: 'tenant-a', guestbookEntries: [] };
+      const page = {
+        id: 'mem-1',
+        published: true,
+        tenantId: 'tenant-a',
+        guestbookEntries: [],
+      };
       bareMemorialPage.findUnique.mockResolvedValue(page);
       scopedMemorialPage.update.mockResolvedValue(page);
 
