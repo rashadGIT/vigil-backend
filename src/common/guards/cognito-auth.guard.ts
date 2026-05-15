@@ -100,23 +100,29 @@ export class CognitoAuthGuard implements CanActivate {
     try {
       const payload = (await verifier.verify(token)) as unknown as CognitoAccessTokenClaims;
 
-      // Sync cognitoSub → User (AUTH-04). Safe idempotent update.
-      await this.prisma.user.updateMany({
-        where: { email: payload.username, cognitoSub: { not: payload.sub } },
-        data: { cognitoSub: payload.sub },
+      // Look up the user in the DB by cognitoSub to get tenantId and role.
+      // Cognito access tokens do not include custom attributes (only ID tokens do),
+      // so we cannot rely on payload['custom:tenantId'] or payload['custom:role'].
+      const dbUser = await this.prisma.user.findFirst({
+        where: { cognitoSub: payload.sub },
+        select: { tenantId: true, role: true, email: true },
       });
 
-      const claimedRole = payload['custom:role'];
-      // super_admin has no tenantId claim; they pass x-tenant-id header for tenant-scoped routes
+      if (!dbUser) {
+        this.logger.warn(`No DB user found for cognitoSub ${payload.sub}`);
+        throw new UnauthorizedException('User not provisioned');
+      }
+
       const effectiveTenantId =
-        claimedRole === 'super_admin'
+        dbUser.role === 'super_admin'
           ? ((request.headers['x-tenant-id'] as string | undefined) ?? '')
-          : (payload['custom:tenantId'] ?? '');
+          : dbUser.tenantId;
+
       request.user = {
         sub: payload.sub,
         tenantId: effectiveTenantId,
-        role: claimedRole,
-        email: payload.username,
+        role: dbUser.role,
+        email: dbUser.email,
       };
       return true;
     } catch (err) {
