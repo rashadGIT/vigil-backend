@@ -46,11 +46,18 @@ jobs:
       - run: npm prune --omit=dev
       - run: zip -r /tmp/vigil-api.zip dist/ node_modules/ prisma/
 
+      - name: Upload zip to S3
+        run: |
+          aws s3 cp /tmp/vigil-api.zip \
+            s3://vigil-documents-887067305712-us-east-2/lambda-deployments/vigil-api.zip \
+            --region us-east-2
+
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
             --function-name vigil-api \
-            --zip-file fileb:///tmp/vigil-api.zip \
+            --s3-bucket vigil-documents-887067305712-us-east-2 \
+            --s3-key lambda-deployments/vigil-api.zip \
             --region us-east-2
 
       - name: Wait for Lambda update

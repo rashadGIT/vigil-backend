@@ -33,6 +33,10 @@ export function makeScopedClient() {
       create: jest.fn(),
       findMany: jest.fn(),
     },
+    familyPortalAccess: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
+    },
     tenant: {
       findFirst: jest.fn(),
       findUnique: jest.fn(),

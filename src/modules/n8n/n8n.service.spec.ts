@@ -7,6 +7,7 @@ import { HttpService } from '@nestjs/axios';
 import { of, throwError } from 'rxjs';
 import { N8nService } from './n8n.service';
 import { N8nEvent } from './n8n-events.enum';
+import { PrismaService } from '../../common/prisma/prisma.service';
 
 describe('N8nService', () => {
   let service: N8nService;
@@ -21,6 +22,7 @@ describe('N8nService', () => {
         N8nService,
         { provide: HttpService, useValue: mockHttp },
         { provide: ConfigService, useValue: mockConfig },
+        { provide: PrismaService, useValue: {} },
       ],
     }).compile();
     service = module.get<N8nService>(N8nService);
@@ -98,7 +100,7 @@ describe('N8nService', () => {
       expect(mockHttp.post).toHaveBeenCalledWith(
         expect.any(String),
         expect.any(Object),
-        expect.objectContaining({ timeout: 5_000 }),
+        expect.objectContaining({ timeout: 2000 }),
       );
     });
 
