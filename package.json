@@ -18,7 +18,12 @@
     "type-check": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "build:lambda": "nest build && npm prune --omit=dev"
+    "build:lambda": "nest build && npm prune --omit=dev",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*.{ts,js}": "eslint --fix",
+    "**/*.{ts,js,json,md}": "prettier --write"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "3.1027.0",
@@ -72,6 +77,8 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^8.59.3"
+    "typescript-eslint": "^8.59.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.4"
   }
 }
