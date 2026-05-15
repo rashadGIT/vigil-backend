@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from './users.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { EmailService } from '../../common/email/email.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 import {
   CognitoIdentityProviderClient,
@@ -49,6 +50,10 @@ describe('UsersService', () => {
         UsersService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: ConfigService, useValue: mockConfig },
+        {
+          provide: EmailService,
+          useValue: { sendWelcome: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 
