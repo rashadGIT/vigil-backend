@@ -103,6 +103,91 @@ describe('AnalyticsService', () => {
     });
   });
 
+  describe('getStaffWorkload', () => {
+    let scopedUser: { findMany: jest.Mock };
+
+    beforeEach(() => {
+      scopedUser = { findMany: jest.fn() };
+      (mockPrisma._scoped as any).user = scopedUser;
+    });
+
+    it('calls forTenant with tenantId', async () => {
+      scopedUser.findMany.mockResolvedValue([]);
+      caseGroupBy.mockResolvedValue([]);
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue([]);
+
+      await service.getStaffWorkload('tenant-a');
+
+      expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-a');
+    });
+
+    it('returns user list with activeCases from groupBy result', async () => {
+      scopedUser.findMany.mockResolvedValue([
+        { id: 'user-1', name: 'Alice', email: 'alice@test.com', role: 'staff' },
+      ]);
+      caseGroupBy.mockResolvedValue([
+        { assignedToId: 'user-1', _count: { id: 3 } },
+      ]);
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue([]);
+
+      const result = await service.getStaffWorkload('tenant-a');
+
+      expect(result[0].activeCases).toBe(3);
+      expect(result[0].overdueTaskCount).toBe(0);
+    });
+
+    it('counts overdue tasks per user via case assignment lookup', async () => {
+      scopedUser.findMany.mockResolvedValue([
+        { id: 'user-1', name: 'Alice', email: 'alice@test.com', role: 'staff' },
+      ]);
+      caseGroupBy.mockResolvedValue([]);
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue([
+        { caseId: 'case-1' },
+        { caseId: 'case-1' },
+      ]);
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([
+        { id: 'case-1', assignedToId: 'user-1' },
+      ]);
+
+      const result = await service.getStaffWorkload('tenant-a');
+
+      expect(result[0].overdueTaskCount).toBe(2);
+    });
+
+    it('returns activeCases 0 and overdueTaskCount 0 for users with no assignments', async () => {
+      scopedUser.findMany.mockResolvedValue([
+        { id: 'user-2', name: 'Bob', email: 'bob@test.com', role: 'staff' },
+      ]);
+      caseGroupBy.mockResolvedValue([]);
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue([]);
+
+      const result = await service.getStaffWorkload('tenant-a');
+
+      expect(result[0].activeCases).toBe(0);
+      expect(result[0].overdueTaskCount).toBe(0);
+    });
+
+    it('does not call case.findMany when no overdue tasks exist', async () => {
+      scopedUser.findMany.mockResolvedValue([]);
+      caseGroupBy.mockResolvedValue([]);
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue([]);
+
+      await service.getStaffWorkload('tenant-a');
+
+      expect(mockPrisma._scoped.case.findMany).not.toHaveBeenCalled();
+    });
+
+    it('returns empty array when no users exist', async () => {
+      scopedUser.findMany.mockResolvedValue([]);
+      caseGroupBy.mockResolvedValue([]);
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue([]);
+
+      const result = await service.getStaffWorkload('tenant-a');
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('computeAndSave', () => {
     beforeEach(() => {
       caseGroupBy.mockResolvedValue([
