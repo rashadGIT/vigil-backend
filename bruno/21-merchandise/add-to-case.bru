@@ -1,0 +1,29 @@
+meta {
+  name: Add Merchandise to Case
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/merchandise
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "itemId": "{{merchandiseId}}",
+    "quantity": 1,
+    "notes": "Family selected in arrangement conference"
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: n8n Callback (Internal)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/internal/n8n/callback
+  body: json
+  auth: none
+}
+
+headers {
+  x-internal-secret: {{internalSecret}}
+}
+
+body:json {
+  {
+    "event": "followup_sent",
+    "payload": {
+      "caseId": "{{caseId}}",
+      "tenantId": "{{tenantId}}",
+      "template": "1_week"
+    }
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

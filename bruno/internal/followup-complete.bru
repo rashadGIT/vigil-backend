@@ -1,0 +1,27 @@
+meta {
+  name: Mark Follow-up Complete (Internal)
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/internal/cases/{{caseId}}/followup-complete
+  body: json
+  auth: none
+}
+
+headers {
+  x-internal-secret: {{internalSecret}}
+}
+
+body:json {
+  {
+    "tenantId": "{{tenantId}}"
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,43 @@
+meta {
+  name: Submit Intake Form (Public)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/intake/{{tenantSlug}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "deceasedName": "Jane Smith",
+    "deceasedDob": "1950-06-20",
+    "deceasedDod": "2024-01-15",
+    "serviceType": "burial",
+    "veteranStatus": false,
+    "placeOfDeath": "St. Mary's Hospital",
+    "causeOfDeath": "Heart failure",
+    "financialResponsibilityAcknowledgment": true,
+    "howDidYouHearAboutUs": "Family referral",
+    "primaryContact": {
+      "name": "Bob Smith",
+      "relationship": "Son",
+      "email": "bob.smith@example.com",
+      "phone": "555-0500",
+      "addressLine1": "789 Maple Ave",
+      "city": "Columbus",
+      "state": "OH",
+      "zip": "43203",
+      "isFinanciallyResponsible": true
+    },
+    "notes": "Family prefers morning services"
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

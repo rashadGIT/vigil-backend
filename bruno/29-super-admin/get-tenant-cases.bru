@@ -1,0 +1,24 @@
+meta {
+  name: Get Tenant Cases (Super Admin)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/super-admin/tenants/{{tenantId}}/cases
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("returns array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+}

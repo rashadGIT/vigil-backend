@@ -1,0 +1,44 @@
+meta {
+  name: Create Merchandise Item
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/merchandise
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Mahogany Casket",
+    "description": "Premium mahogany casket with ivory interior",
+    "category": "casket",
+    "priceRetail": 3200.00,
+    "priceCost": 1800.00,
+    "sku": "CASK-MAH-001",
+    "inStock": true,
+    "sortOrder": 1
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.id) {
+    bru.setEnvVar("merchandiseId", data.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

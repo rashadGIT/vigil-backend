@@ -1,0 +1,27 @@
+meta {
+  name: Get Analytics Snapshot
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/analytics/snapshot
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+params:query {
+  ~period: monthly
+  ~from: 2024-01-01
+  ~to: 2024-01-31
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

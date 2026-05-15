@@ -1,0 +1,24 @@
+meta {
+  name: Overdue Tasks (Internal)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/internal/cases/overdue-tasks
+  body: none
+  auth: none
+}
+
+headers {
+  x-internal-secret: {{internalSecret}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("returns array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Remove Merchandise from Case
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/cases/{{caseId}}/merchandise/{{merchandiseId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

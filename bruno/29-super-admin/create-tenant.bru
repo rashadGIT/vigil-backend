@@ -1,0 +1,39 @@
+meta {
+  name: Create Tenant (Super Admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/super-admin/tenants
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Heritage Funeral Home",
+    "slug": "heritage-funeral",
+    "planTier": "starter"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.id) {
+    bru.setEnvVar("tenantId", data.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

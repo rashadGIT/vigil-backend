@@ -1,0 +1,29 @@
+meta {
+  name: List Merchandise
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/merchandise
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+params:query {
+  ~category: casket
+  ~inStock: true
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("returns array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+}

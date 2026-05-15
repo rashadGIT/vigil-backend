@@ -1,0 +1,29 @@
+meta {
+  name: Compute Analytics Snapshot (Internal)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/analytics/snapshot
+  body: json
+  auth: none
+}
+
+headers {
+  x-internal-secret: {{internalSecret}}
+}
+
+body:json {
+  {
+    "tenantId": "{{tenantId}}",
+    "period": "monthly",
+    "periodStart": "2024-01-01T00:00:00.000Z"
+  }
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

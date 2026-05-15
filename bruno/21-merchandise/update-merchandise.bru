@@ -1,0 +1,28 @@
+meta {
+  name: Update Merchandise Item
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/merchandise/{{merchandiseId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "priceRetail": 3400.00,
+    "inStock": true
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

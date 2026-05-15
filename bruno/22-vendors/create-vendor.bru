@@ -1,0 +1,41 @@
+meta {
+  name: Create Vendor
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/vendors
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Heavenly Flowers",
+    "type": "florist",
+    "contactName": "Mary Williams",
+    "email": "mary@heavenlyflowers.com",
+    "phone": "555-0300"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.id) {
+    bru.setEnvVar("vendorId", data.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

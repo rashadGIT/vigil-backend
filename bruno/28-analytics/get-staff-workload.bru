@@ -1,0 +1,21 @@
+meta {
+  name: Get Staff Workload
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/analytics/staff-workload
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,47 @@
+meta {
+  name: Create Preneed
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/preneed
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "clientFirstName": "Dorothy",
+    "clientLastName": "Henderson",
+    "clientDob": "1945-08-12",
+    "clientPhone": "555-0400",
+    "clientEmail": "dorothy.h@example.com",
+    "clientAddress": "456 Elm St, Columbus, OH 43202",
+    "serviceType": "cremation",
+    "fundingType": "insurance",
+    "insuranceCompany": "State Life Insurance",
+    "policyNumber": "POL-123456",
+    "faceValue": 7500.00
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.id) {
+    bru.setEnvVar("preneedId", data.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}
