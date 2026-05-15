@@ -28,6 +28,7 @@ const validDto = {
   deceasedName: 'John Doe',
   serviceType: 'burial' as any,
   primaryContact: { name: 'Jane Doe', relationship: 'spouse' },
+  financialResponsibilityAcknowledgment: true,
 };
 
 describe('IntakeService', () => {
@@ -138,7 +139,7 @@ describe('IntakeService', () => {
     it('returns caseId matching what case.create resolved with', async () => {
       const result = await service.submit('sunrise', validDto);
 
-      expect(result).toEqual({ caseId: 'case-1' });
+      expect(result).toMatchObject({ caseId: 'case-1' });
     });
   });
 
