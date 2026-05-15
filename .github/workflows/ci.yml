@@ -11,8 +11,13 @@ jobs:
     name: TypeScript Type Check
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+=======
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
+>>>>>>> origin/main
         with:
           node-version: '20'
           cache: 'npm'
@@ -23,8 +28,13 @@ jobs:
     name: ESLint
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+=======
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
+>>>>>>> origin/main
         with:
           node-version: '20'
           cache: 'npm'
@@ -35,8 +45,13 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+=======
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
+>>>>>>> origin/main
         with:
           node-version: '20'
           cache: 'npm'
@@ -75,8 +90,13 @@ jobs:
       N8N_WEBHOOK_REVIEW_REQUEST: https://PLACEHOLDER.n8n.cloud/test
 
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+=======
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
+>>>>>>> origin/main
         with:
           node-version: '20'
           cache: 'npm'
@@ -88,7 +108,7 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:coverage
       - name: Upload coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: backend-coverage
