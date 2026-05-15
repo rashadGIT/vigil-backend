@@ -1,0 +1,21 @@
+meta {
+  name: Generate GPL PDF
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/gpl/generate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

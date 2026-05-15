@@ -1,0 +1,37 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@demo-tenant.com",
+    "password": "Demo1234!"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.accessToken) {
+    bru.setEnvVar("accessToken", data.accessToken);
+  }
+  if (data.refreshToken) {
+    bru.setEnvVar("refreshToken", data.refreshToken);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has accessToken", function() {
+    expect(res.getBody()).to.have.property("accessToken");
+  });
+}

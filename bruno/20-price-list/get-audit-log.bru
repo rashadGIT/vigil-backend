@@ -1,0 +1,21 @@
+meta {
+  name: Get Price List Audit Log
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/price-list/audit
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

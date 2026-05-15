@@ -1,0 +1,28 @@
+meta {
+  name: Update Obituary
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/cases/{{caseId}}/obituary
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "draftText": "John William Doe, beloved husband and father, passed away peacefully on January 10, 2024 at the age of 83. He is survived by his wife Mary and daughter Jane.",
+    "status": "approved"
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

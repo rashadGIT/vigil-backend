@@ -1,0 +1,29 @@
+meta {
+  name: List Calendar Events
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/calendar/events
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+params:query {
+  ~from: 2024-01-01T00:00:00.000Z
+  ~to: 2024-01-31T23:59:59.000Z
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("returns array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+}

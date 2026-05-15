@@ -1,0 +1,36 @@
+meta {
+  name: Create Death Certificate
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/death-certificate
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "deceasedFullName": "John William Doe",
+    "dateOfDeath": "2024-01-10",
+    "placeOfDeath": "Memorial Hospital, Columbus, OH",
+    "causeOfDeath": "Natural causes",
+    "certifiedCopiesOrdered": 5,
+    "physicianName": "Dr. Robert Johnson",
+    "status": "pending"
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

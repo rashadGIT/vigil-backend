@@ -1,0 +1,42 @@
+meta {
+  name: Presign Upload
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/documents/presign
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "fileName": "death-certificate.pdf",
+    "contentType": "application/pdf",
+    "documentType": "death_cert"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.documentId) {
+    bru.setEnvVar("documentId", data.documentId);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has uploadUrl", function() {
+    expect(res.getBody()).to.have.property("uploadUrl");
+  });
+  test("has documentId", function() {
+    expect(res.getBody()).to.have.property("documentId");
+  });
+}

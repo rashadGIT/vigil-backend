@@ -1,0 +1,39 @@
+meta {
+  name: Request Signature
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/signatures/request
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "contactId": "{{contactId}}",
+    "documentType": "authorization",
+    "signerName": "Jane Smith"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.token) {
+    bru.setEnvVar("signToken", data.token);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Upsert Tracking (POST)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/tracking
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "status": "at_facility",
+    "location": "Preparation Room"
+  }
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

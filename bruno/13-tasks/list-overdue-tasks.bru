@@ -1,0 +1,24 @@
+meta {
+  name: List Overdue Tasks
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/tasks/overdue
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("returns array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+}

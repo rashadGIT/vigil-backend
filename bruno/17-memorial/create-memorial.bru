@@ -1,0 +1,41 @@
+meta {
+  name: Create Memorial
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/memorial
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "photoUrls": [],
+    "published": false
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.id) {
+    bru.setEnvVar("memorialId", data.id);
+  }
+  if (data.slug) {
+    bru.setEnvVar("memorialSlug", data.slug);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Confirm Upload
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/documents/confirm
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "documentId": "{{documentId}}"
+  }
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

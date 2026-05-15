@@ -1,0 +1,24 @@
+meta {
+  name: Add Guestbook Entry (Public)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/memorial/{{memorialSlug}}/guestbook
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Robert Johnson",
+    "message": "John was a wonderful man who touched many lives. He will be deeply missed."
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

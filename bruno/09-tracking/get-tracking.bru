@@ -1,0 +1,21 @@
+meta {
+  name: Get Tracking
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/cases/{{caseId}}/tracking
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

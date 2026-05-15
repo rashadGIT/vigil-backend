@@ -1,0 +1,24 @@
+meta {
+  name: Get Case
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/cases/{{caseId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

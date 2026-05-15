@@ -1,0 +1,44 @@
+meta {
+  name: Create Case
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cases
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "deceasedName": "John Doe",
+    "deceasedDob": "1940-03-15",
+    "deceasedDod": "2024-01-10",
+    "serviceType": "cremation",
+    "faithTradition": "Non-denominational"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.id) {
+    bru.setEnvVar("caseId", data.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+  test("deceasedName matches", function() {
+    expect(res.getBody().deceasedName).to.equal("John Doe");
+  });
+}

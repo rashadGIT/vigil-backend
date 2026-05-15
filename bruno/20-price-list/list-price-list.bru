@@ -1,0 +1,24 @@
+meta {
+  name: List Price List
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/price-list
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("returns array", function() {
+    expect(res.getBody()).to.be.an("array");
+  });
+}

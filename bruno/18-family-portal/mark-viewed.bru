@@ -1,0 +1,17 @@
+meta {
+  name: Mark Family Portal Viewed (Public)
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/family-portal/{{familyPortalToken}}/viewed
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

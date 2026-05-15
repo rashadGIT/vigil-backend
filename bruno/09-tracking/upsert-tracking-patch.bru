@@ -1,0 +1,28 @@
+meta {
+  name: Upsert Tracking (PATCH)
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{baseUrl}}/cases/{{caseId}}/tracking
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "status": "in_preparation",
+    "location": "Embalming Room"
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

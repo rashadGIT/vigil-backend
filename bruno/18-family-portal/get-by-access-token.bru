@@ -1,0 +1,17 @@
+meta {
+  name: Get Family Portal by Token (Public)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/family-portal/{{familyPortalToken}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

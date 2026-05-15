@@ -1,0 +1,24 @@
+meta {
+  name: Submit Signature (Public)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/sign/{{signToken}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "intentConfirmed": true,
+    "signatureData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+  }
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

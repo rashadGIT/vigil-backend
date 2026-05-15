@@ -1,0 +1,17 @@
+meta {
+  name: Confirm Signature Intent (Public)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/sign/{{signToken}}/intent
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

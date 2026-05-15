@@ -1,0 +1,31 @@
+meta {
+  name: Update Case
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/cases/{{caseId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "faithTradition": "Catholic",
+    "serviceType": "burial"
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

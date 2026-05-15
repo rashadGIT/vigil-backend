@@ -1,0 +1,21 @@
+meta {
+  name: Delete Note
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/cases/{{caseId}}/notes/{{noteId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

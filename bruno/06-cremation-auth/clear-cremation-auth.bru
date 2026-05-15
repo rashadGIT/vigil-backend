@@ -1,0 +1,21 @@
+meta {
+  name: Clear Cremation Auth
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/cremation-auth/clear
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

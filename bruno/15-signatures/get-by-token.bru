@@ -1,0 +1,17 @@
+meta {
+  name: Get Signature by Token (Public)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/sign/{{signToken}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

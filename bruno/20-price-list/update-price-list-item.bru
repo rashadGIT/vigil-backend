@@ -1,0 +1,27 @@
+meta {
+  name: Update Price List Item
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/price-list/{{priceListItemId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "price": 1595.00
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

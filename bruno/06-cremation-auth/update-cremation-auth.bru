@@ -1,0 +1,28 @@
+meta {
+  name: Update Cremation Auth
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/cases/{{caseId}}/cremation-auth
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "status": "authorized",
+    "authorizedAt": "2024-01-12T14:00:00.000Z"
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Update Memorial
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/memorial/{{memorialId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "published": true
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

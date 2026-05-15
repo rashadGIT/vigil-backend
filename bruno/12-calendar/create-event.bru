@@ -1,0 +1,43 @@
+meta {
+  name: Create Calendar Event
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/calendar/events
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Visitation — John Doe",
+    "eventType": "visitation",
+    "caseId": "{{caseId}}",
+    "startTime": "2024-01-18T13:00:00.000Z",
+    "endTime": "2024-01-18T17:00:00.000Z",
+    "location": "Main Chapel",
+    "notes": "Open casket"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data.id) {
+    bru.setEnvVar("eventId", data.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

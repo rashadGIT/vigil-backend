@@ -1,0 +1,27 @@
+meta {
+  name: Update Case Status
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseUrl}}/cases/{{caseId}}/status
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "status": "in_progress"
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Request Upload via Family Portal (Public)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/family-portal/{{familyPortalToken}}/documents
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fileName": "insurance-policy.pdf",
+    "contentType": "application/pdf"
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has uploadUrl", function() {
+    expect(res.getBody()).to.have.property("uploadUrl");
+  });
+}

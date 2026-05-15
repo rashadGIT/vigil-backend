@@ -1,0 +1,40 @@
+meta {
+  name: Create First Call
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cases/{{caseId}}/first-call
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "calledAt": "2024-01-10T08:30:00.000Z",
+    "calledBy": "Jane Smith",
+    "callerRelationship": "Daughter",
+    "removalAddress": "123 Oak St, Columbus, OH 43201",
+    "removalLocation": "home",
+    "removalAt": "2024-01-10T10:00:00.000Z",
+    "removedBy": "Staff Member",
+    "authorizedBy": "Jane Smith",
+    "authorizationMethod": "verbal",
+    "specialInstructions": "Handle with care",
+    "weightEstimate": 180
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("has id", function() {
+    expect(res.getBody()).to.have.property("id");
+  });
+}

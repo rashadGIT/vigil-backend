@@ -1,0 +1,30 @@
+meta {
+  name: Upsert Payment
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/cases/{{caseId}}/payment
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "totalAmount": 8500.00,
+    "amountPaid": 2500.00,
+    "method": "check",
+    "notes": "Initial deposit received"
+  }
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

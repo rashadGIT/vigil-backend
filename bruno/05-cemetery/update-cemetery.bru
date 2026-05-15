@@ -1,0 +1,29 @@
+meta {
+  name: Update Cemetery
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/cases/{{caseId}}/cemetery
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "openingClosingOrdered": true,
+    "openingClosingOrderedAt": "2024-01-15T09:00:00.000Z",
+    "permitNumber": "PERM-2024-001"
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

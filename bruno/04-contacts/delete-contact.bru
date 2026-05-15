@@ -1,0 +1,21 @@
+meta {
+  name: Delete Contact
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/cases/{{caseId}}/contacts/{{contactId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

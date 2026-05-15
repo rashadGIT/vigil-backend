@@ -1,0 +1,21 @@
+meta {
+  name: Log Price List View
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/price-list/view
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+}

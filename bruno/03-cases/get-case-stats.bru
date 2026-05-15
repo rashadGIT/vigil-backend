@@ -1,0 +1,21 @@
+meta {
+  name: Get Case Stats
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/cases/stats
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}
