@@ -115,7 +115,7 @@ describe('Tenant isolation', () => {
   describe('CasesService', () => {
     it('findAll for tenant-a never touches tenant-b scope', async () => {
       asMock(prisma._scopeA.case.findMany).mockResolvedValue([
-        { id: 'case-a1', tenantId: 'tenant-a' },
+        { id: 'case-a1', tenantId: 'tenant-a', tasks: [] },
       ]);
 
       await casesService.findAll('tenant-a', {});
@@ -127,7 +127,7 @@ describe('Tenant isolation', () => {
 
     it('findAll for tenant-b never touches tenant-a scope', async () => {
       asMock(prisma._scopeB.case.findMany).mockResolvedValue([
-        { id: 'case-b1', tenantId: 'tenant-b' },
+        { id: 'case-b1', tenantId: 'tenant-b', tasks: [] },
       ]);
 
       await casesService.findAll('tenant-b', {});
@@ -157,10 +157,10 @@ describe('Tenant isolation', () => {
 
     it('concurrent findAll calls use independent scopes without bleed', async () => {
       asMock(prisma._scopeA.case.findMany).mockResolvedValue([
-        { id: 'case-a', tenantId: 'tenant-a' },
+        { id: 'case-a', tenantId: 'tenant-a', tasks: [] },
       ]);
       asMock(prisma._scopeB.case.findMany).mockResolvedValue([
-        { id: 'case-b', tenantId: 'tenant-b' },
+        { id: 'case-b', tenantId: 'tenant-b', tasks: [] },
       ]);
 
       const [resultA, resultB] = await Promise.all([
@@ -257,11 +257,13 @@ describe('Tenant isolation', () => {
         id: 'case-a-secret',
         tenantId: 'tenant-a',
         deceasedName: 'Private Person',
+        tasks: [],
       };
       const caseB = {
         id: 'case-b-public',
         tenantId: 'tenant-b',
         deceasedName: 'Another Person',
+        tasks: [],
       };
 
       asMock(prisma._scopeA.case.findMany).mockResolvedValue([caseA]);
