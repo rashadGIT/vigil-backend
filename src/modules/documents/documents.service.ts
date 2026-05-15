@@ -38,14 +38,18 @@ export class DocumentsService {
     const existing = await this.prisma.forTenant(tenantId).document.findFirst({
       where: { id: documentId },
     });
-    if (!existing) throw new NotFoundException(`Document ${documentId} not found`);
+    if (!existing)
+      throw new NotFoundException(`Document ${documentId} not found`);
     return this.prisma.forTenant(tenantId).document.update({
       where: { id: documentId },
       data: { uploaded: true },
     });
   }
 
-  async getSignedUrl(tenantId: string, documentId: string): Promise<{ url: string }> {
+  async getSignedUrl(
+    tenantId: string,
+    documentId: string,
+  ): Promise<{ url: string }> {
     const doc = await this.prisma.forTenant(tenantId).document.findFirst({
       where: { id: documentId, deletedAt: null },
     });

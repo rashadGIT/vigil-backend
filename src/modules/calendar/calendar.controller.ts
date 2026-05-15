@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -8,7 +17,10 @@ import {
 } from '@nestjs/swagger';
 import { CalendarService } from './calendar.service';
 import { UpsertEventDto } from './dto/calendar-event.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('calendar')
 @ApiBearerAuth()
@@ -26,8 +38,16 @@ export class CalendarController {
 
   @Get()
   @ApiOperation({ summary: 'List calendar events within a date range' })
-  @ApiQuery({ name: 'from', required: false, description: 'ISO date string (default: now)' })
-  @ApiQuery({ name: 'to', required: false, description: 'ISO date string (default: 30 days from now)' })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'ISO date string (default: now)',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'ISO date string (default: 30 days from now)',
+  })
   @ApiResponse({ status: 200, description: 'Returns array of events' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(
@@ -36,7 +56,9 @@ export class CalendarController {
     @Query('to') to: string,
   ) {
     const fromDate = from ? new Date(from) : new Date();
-    const toDate = to ? new Date(to) : new Date(Date.now() + 30 * 24 * 3600 * 1000);
+    const toDate = to
+      ? new Date(to)
+      : new Date(Date.now() + 30 * 24 * 3600 * 1000);
     return this.service.findInRange(user.tenantId, fromDate, toDate);
   }
 

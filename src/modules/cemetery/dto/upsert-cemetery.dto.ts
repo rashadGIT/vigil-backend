@@ -22,7 +22,9 @@ export class UpsertCemeteryDto {
   @IsString()
   sectionLotGrave?: string;
 
-  @ApiPropertyOptional({ description: 'ground | mausoleum | columbarium | scattering' })
+  @ApiPropertyOptional({
+    description: 'ground | mausoleum | columbarium | scattering',
+  })
   @IsOptional()
   @IsString()
   intermentType?: string;

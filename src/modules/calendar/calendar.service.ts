@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { UpsertEventDto } from './dto/calendar-event.dto';
 
@@ -18,17 +22,19 @@ export class CalendarService {
     excludeEventId?: string,
   ): Promise<void> {
     if (staffIds.length === 0) return;
-    const conflicts = await this.prisma.forTenant(tenantId).calendarEventStaff.findMany({
-      where: {
-        userId: { in: staffIds },
-        calendarEvent: {
-          ...(excludeEventId ? { id: { not: excludeEventId } } : {}),
-          startTime: { lt: endTime },
-          endTime: { gt: startTime },
+    const conflicts = await this.prisma
+      .forTenant(tenantId)
+      .calendarEventStaff.findMany({
+        where: {
+          userId: { in: staffIds },
+          calendarEvent: {
+            ...(excludeEventId ? { id: { not: excludeEventId } } : {}),
+            startTime: { lt: endTime },
+            endTime: { gt: startTime },
+          },
         },
-      },
-      include: { calendarEvent: true },
-    });
+        include: { calendarEvent: true },
+      });
     if (conflicts.length > 0) {
       throw new BadRequestException(
         `Double-booking: staff ${conflicts[0].userId} already booked at ${conflicts[0].calendarEvent.startTime.toISOString()}`,
@@ -54,14 +60,15 @@ export class CalendarService {
         endTime: end,
         location: dto.location ?? null,
         notes: dto.notes ?? null,
-        staff: dto.staffIds && dto.staffIds.length > 0
-          ? {
-              create: dto.staffIds.map((userId) => ({
-                tenantId,
-                userId,
-              })),
-            }
-          : undefined,
+        staff:
+          dto.staffIds && dto.staffIds.length > 0
+            ? {
+                create: dto.staffIds.map((userId) => ({
+                  tenantId,
+                  userId,
+                })),
+              }
+            : undefined,
       },
       include: { staff: true },
     });
@@ -79,11 +86,19 @@ export class CalendarService {
   }
 
   async update(tenantId: string, id: string, dto: UpsertEventDto) {
-    const existing = await this.prisma.forTenant(tenantId).calendarEvent.findFirst({ where: { id } });
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .calendarEvent.findFirst({ where: { id } });
     if (!existing) throw new NotFoundException(`Event ${id} not found`);
     const start = new Date(dto.startTime);
     const end = new Date(dto.endTime);
-    await this.assertNoDoubleBooking(tenantId, dto.staffIds ?? [], start, end, id);
+    await this.assertNoDoubleBooking(
+      tenantId,
+      dto.staffIds ?? [],
+      start,
+      end,
+      id,
+    );
 
     return this.prisma.forTenant(tenantId).calendarEvent.update({
       where: { id },
@@ -100,6 +115,8 @@ export class CalendarService {
   }
 
   async remove(tenantId: string, id: string) {
-    return this.prisma.forTenant(tenantId).calendarEvent.delete({ where: { id } });
+    return this.prisma
+      .forTenant(tenantId)
+      .calendarEvent.delete({ where: { id } });
   }
 }

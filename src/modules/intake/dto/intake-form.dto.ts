@@ -60,7 +60,10 @@ export class IntakeContactDto {
   @MaxLength(20)
   zip?: string;
 
-  @ApiPropertyOptional({ default: true, description: 'Is this contact financially responsible for services?' })
+  @ApiPropertyOptional({
+    default: true,
+    description: 'Is this contact financially responsible for services?',
+  })
   @IsOptional()
   @IsBoolean()
   isFinanciallyResponsible?: boolean;
@@ -87,7 +90,10 @@ export class IntakeFormDto {
   @IsEnum(ServiceType)
   serviceType!: ServiceType;
 
-  @ApiPropertyOptional({ default: false, description: 'Was the deceased a U.S. military veteran?' })
+  @ApiPropertyOptional({
+    default: false,
+    description: 'Was the deceased a U.S. military veteran?',
+  })
   @IsOptional()
   @IsBoolean()
   veteranStatus?: boolean;
@@ -98,19 +104,28 @@ export class IntakeFormDto {
   @MaxLength(200)
   placeOfDeath?: string;
 
-  @ApiPropertyOptional({ example: 'Natural causes', description: 'Only collected when tenant has this feature enabled' })
+  @ApiPropertyOptional({
+    example: 'Natural causes',
+    description: 'Only collected when tenant has this feature enabled',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   causeOfDeath?: string;
 
-  @ApiProperty({ description: 'Primary next-of-kin contact information', type: IntakeContactDto })
+  @ApiProperty({
+    description: 'Primary next-of-kin contact information',
+    type: IntakeContactDto,
+  })
   @IsDefined()
   @ValidateNested()
   @Type(() => IntakeContactDto)
   primaryContact!: IntakeContactDto;
 
-  @ApiPropertyOptional({ description: 'Optional second family contact', type: IntakeContactDto })
+  @ApiPropertyOptional({
+    description: 'Optional second family contact',
+    type: IntakeContactDto,
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => IntakeContactDto)
@@ -121,7 +136,9 @@ export class IntakeFormDto {
   @IsString()
   notes?: string;
 
-  @ApiProperty({ description: 'Family acknowledges financial responsibility for services' })
+  @ApiProperty({
+    description: 'Family acknowledges financial responsibility for services',
+  })
   @IsBoolean()
   financialResponsibilityAcknowledgment!: boolean;
 

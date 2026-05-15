@@ -8,12 +8,18 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('TrackingService', () => {
   let service: TrackingService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
-  let scopedTracking: { findFirst: jest.Mock; create: jest.Mock; update: jest.Mock };
+  let scopedTracking: {
+    findFirst: jest.Mock;
+    create: jest.Mock;
+    update: jest.Mock;
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -41,7 +47,11 @@ describe('TrackingService', () => {
 
     it('creates tracking record when none exists for case', async () => {
       scopedTracking.findFirst.mockResolvedValue(null);
-      scopedTracking.create.mockResolvedValue({ id: 'track-1', caseId: 'case-1', ...dto });
+      scopedTracking.create.mockResolvedValue({
+        id: 'track-1',
+        caseId: 'case-1',
+        ...dto,
+      });
 
       const result = await service.upsert('tenant-a', 'case-1', dto, 'user-1');
 
@@ -61,7 +71,11 @@ describe('TrackingService', () => {
     it('updates tracking record when one already exists', async () => {
       const existing = { id: 'track-existing', caseId: 'case-1' };
       scopedTracking.findFirst.mockResolvedValue(existing);
-      scopedTracking.update.mockResolvedValue({ ...existing, ...dto, updatedBy: 'user-1' });
+      scopedTracking.update.mockResolvedValue({
+        ...existing,
+        ...dto,
+        updatedBy: 'user-1',
+      });
 
       const result = await service.upsert('tenant-a', 'case-1', dto, 'user-1');
 
@@ -87,10 +101,19 @@ describe('TrackingService', () => {
 
   describe('findByCase', () => {
     it('returns tracking record when found', async () => {
-      const record = { id: 'track-1', caseId: 'case-1', currentLocation: 'chapel' };
+      const record = {
+        id: 'track-1',
+        caseId: 'case-1',
+        currentLocation: 'chapel',
+      };
       // findByCase uses a second forTenant call separately
-      const scopedTracking2 = { findFirst: jest.fn().mockResolvedValue(record) };
-      asMock(mockPrisma.forTenant).mockReturnValue({ ...mockPrisma._scoped, decedentTracking: scopedTracking2 } as any);
+      const scopedTracking2 = {
+        findFirst: jest.fn().mockResolvedValue(record),
+      };
+      asMock(mockPrisma.forTenant).mockReturnValue({
+        ...mockPrisma._scoped,
+        decedentTracking: scopedTracking2,
+      } as any);
 
       const result = await service.findByCase('tenant-a', 'case-1');
 
@@ -99,16 +122,26 @@ describe('TrackingService', () => {
 
     it('throws NotFoundException when no tracking record exists', async () => {
       const scopedTracking2 = { findFirst: jest.fn().mockResolvedValue(null) };
-      asMock(mockPrisma.forTenant).mockReturnValue({ ...mockPrisma._scoped, decedentTracking: scopedTracking2 } as any);
+      asMock(mockPrisma.forTenant).mockReturnValue({
+        ...mockPrisma._scoped,
+        decedentTracking: scopedTracking2,
+      } as any);
 
-      await expect(service.findByCase('tenant-a', 'case-1')).rejects.toThrow(NotFoundException);
+      await expect(service.findByCase('tenant-a', 'case-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException containing the caseId', async () => {
       const scopedTracking2 = { findFirst: jest.fn().mockResolvedValue(null) };
-      asMock(mockPrisma.forTenant).mockReturnValue({ ...mockPrisma._scoped, decedentTracking: scopedTracking2 } as any);
+      asMock(mockPrisma.forTenant).mockReturnValue({
+        ...mockPrisma._scoped,
+        decedentTracking: scopedTracking2,
+      } as any);
 
-      await expect(service.findByCase('tenant-a', 'case-99')).rejects.toThrow('case-99');
+      await expect(service.findByCase('tenant-a', 'case-99')).rejects.toThrow(
+        'case-99',
+      );
     });
   });
 });

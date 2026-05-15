@@ -8,12 +8,18 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
-  let scopedPayment: { findFirst: jest.Mock; create: jest.Mock; update: jest.Mock };
+  let scopedPayment: {
+    findFirst: jest.Mock;
+    create: jest.Mock;
+    update: jest.Mock;
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -38,17 +44,28 @@ describe('PaymentsService', () => {
   });
 
   describe('upsert', () => {
-    const dto = { totalAmount: 5000, amountPaid: 1000, paymentMethod: 'cash' } as any;
+    const dto = {
+      totalAmount: 5000,
+      amountPaid: 1000,
+      paymentMethod: 'cash',
+    } as any;
 
     it('creates payment when none exists for case', async () => {
       scopedPayment.findFirst.mockResolvedValue(null);
-      scopedPayment.create.mockResolvedValue({ id: 'pay-1', caseId: 'case-1', ...dto });
+      scopedPayment.create.mockResolvedValue({
+        id: 'pay-1',
+        caseId: 'case-1',
+        ...dto,
+      });
 
       const result = await service.upsert('tenant-a', 'case-1', dto);
 
       expect(scopedPayment.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ tenantId: 'tenant-a', caseId: 'case-1' }),
+          data: expect.objectContaining({
+            tenantId: 'tenant-a',
+            caseId: 'case-1',
+          }),
         }),
       );
       expect(result).toHaveProperty('id', 'pay-1');
@@ -94,13 +111,17 @@ describe('PaymentsService', () => {
     it('throws NotFoundException when no payment exists for case', async () => {
       scopedPayment.findFirst.mockResolvedValue(null);
 
-      await expect(service.findByCase('tenant-a', 'case-1')).rejects.toThrow(NotFoundException);
+      await expect(service.findByCase('tenant-a', 'case-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException containing the caseId', async () => {
       scopedPayment.findFirst.mockResolvedValue(null);
 
-      await expect(service.findByCase('tenant-a', 'case-99')).rejects.toThrow('case-99');
+      await expect(service.findByCase('tenant-a', 'case-99')).rejects.toThrow(
+        'case-99',
+      );
     });
 
     it('calls forTenant with the tenantId', async () => {

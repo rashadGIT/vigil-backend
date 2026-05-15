@@ -16,9 +16,12 @@ export class PaymentsService {
   }
 
   async findByCase(tenantId: string, caseId: string) {
-    const payment = await this.prisma.forTenant(tenantId).payment.findFirst({ where: { caseId } });
+    const payment = await this.prisma
+      .forTenant(tenantId)
+      .payment.findFirst({ where: { caseId } });
     if (!payment) throw new NotFoundException(`No payment for case ${caseId}`);
-    const outstanding = Number(payment.totalAmount) - Number(payment.amountPaid);
+    const outstanding =
+      Number(payment.totalAmount) - Number(payment.amountPaid);
     return { ...payment, outstanding };
   }
 }

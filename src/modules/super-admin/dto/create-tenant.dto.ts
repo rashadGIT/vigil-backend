@@ -14,7 +14,10 @@ export class CreateTenantDto {
   @MinLength(2)
   name!: string;
 
-  @ApiProperty({ example: 'sunrise-memorial', description: 'URL-safe slug, lowercase kebab' })
+  @ApiProperty({
+    example: 'sunrise-memorial',
+    description: 'URL-safe slug, lowercase kebab',
+  })
   @IsString()
   @MinLength(2)
   slug!: string;

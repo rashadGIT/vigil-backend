@@ -81,8 +81,12 @@ describeIf('Tenant Isolation (integration — requires real DB)', () => {
 
   afterAll(async () => {
     // Delete child records first (FK constraints), then tenants
-    await rawPrisma.case.deleteMany({ where: { id: { in: [caseAId, caseBId] } } });
-    await rawPrisma.tenant.deleteMany({ where: { id: { in: [tenantAId, tenantBId] } } });
+    await rawPrisma.case.deleteMany({
+      where: { id: { in: [caseAId, caseBId] } },
+    });
+    await rawPrisma.tenant.deleteMany({
+      where: { id: { in: [tenantAId, tenantBId] } },
+    });
     await rawPrisma.$disconnect();
     await prisma.onModuleDestroy();
   });

@@ -8,7 +8,10 @@ import {
 import { DocumentsService } from './documents.service';
 import { PresignDto } from './dto/presign.dto';
 import { ConfirmDto } from './dto/confirm.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('documents')
 @ApiBearerAuth()
@@ -17,19 +20,31 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post('cases/:caseId/documents/presign')
-  @ApiOperation({ summary: 'Generate a presigned S3 URL for direct file upload' })
-  @ApiResponse({ status: 201, description: 'Returns presigned URL and document ID' })
+  @ApiOperation({
+    summary: 'Generate a presigned S3 URL for direct file upload',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Returns presigned URL and document ID',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   presign(
     @CurrentUser() user: AuthUser,
     @Param('caseId') caseId: string,
     @Body() dto: PresignDto,
   ) {
-    return this.documentsService.createPresign(user.tenantId, caseId, user.sub, dto);
+    return this.documentsService.createPresign(
+      user.tenantId,
+      caseId,
+      user.sub,
+      dto,
+    );
   }
 
   @Post('cases/:caseId/documents/confirm')
-  @ApiOperation({ summary: 'Confirm that a file upload to S3 completed successfully' })
+  @ApiOperation({
+    summary: 'Confirm that a file upload to S3 completed successfully',
+  })
   @ApiResponse({ status: 200, description: 'Document marked as uploaded' })
   @ApiResponse({ status: 404, description: 'Document not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -46,7 +61,9 @@ export class DocumentsController {
   }
 
   @Get('documents/:id/url')
-  @ApiOperation({ summary: 'Get a temporary signed download URL for a document' })
+  @ApiOperation({
+    summary: 'Get a temporary signed download URL for a document',
+  })
   @ApiResponse({ status: 200, description: 'Returns signed URL' })
   @ApiResponse({ status: 404, description: 'Document not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

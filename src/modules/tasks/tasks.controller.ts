@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -8,7 +16,10 @@ import {
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('tasks')
 @ApiBearerAuth()
@@ -37,7 +48,9 @@ export class TasksController {
   }
 
   @Get('tasks/overdue')
-  @ApiOperation({ summary: 'List all overdue tasks across all cases for the tenant' })
+  @ApiOperation({
+    summary: 'List all overdue tasks across all cases for the tenant',
+  })
   @ApiResponse({ status: 200, description: 'Returns array of overdue tasks' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findOverdue(@CurrentUser() user: AuthUser) {

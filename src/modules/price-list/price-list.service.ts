@@ -20,18 +20,30 @@ export class PriceListService {
   }
 
   create(tenantId: string, dto: UpsertPriceListItemDto) {
-    return this.prisma.forTenant(tenantId).priceListItem.create({ data: { ...dto, tenantId } });
+    return this.prisma
+      .forTenant(tenantId)
+      .priceListItem.create({ data: { ...dto, tenantId } });
   }
 
   async update(tenantId: string, id: string, dto: UpsertPriceListItemDto) {
-    const existing = await this.prisma.forTenant(tenantId).priceListItem.findFirst({ where: { id } });
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .priceListItem.findFirst({ where: { id } });
     if (!existing) throw new NotFoundException(`Item ${id} not found`);
-    return this.prisma.forTenant(tenantId).priceListItem.update({ where: { id }, data: dto });
+    return this.prisma
+      .forTenant(tenantId)
+      .priceListItem.update({ where: { id }, data: dto });
   }
 
   async logGplView(tenantId: string, userId: string): Promise<void> {
     await this.prisma.forTenant(tenantId).auditLog.create({
-      data: { tenantId, userId, action: 'gpl_view', entityType: 'price_list', entityId: tenantId },
+      data: {
+        tenantId,
+        userId,
+        action: 'gpl_view',
+        entityType: 'price_list',
+        entityId: tenantId,
+      },
     });
   }
 
@@ -44,7 +56,11 @@ export class PriceListService {
     });
   }
 
-  async generateGplPdf(tenantId: string, caseId: string, userId: string): Promise<{ s3Key: string }> {
+  async generateGplPdf(
+    tenantId: string,
+    caseId: string,
+    userId: string,
+  ): Promise<{ s3Key: string }> {
     const buffer = await this.pdfService.generateGpl(caseId, tenantId);
     const s3Key = this.s3.buildKey(tenantId, caseId, `gpl-${Date.now()}.pdf`);
     await this.s3.uploadBuffer(s3Key, buffer, 'application/pdf');
@@ -61,7 +77,13 @@ export class PriceListService {
     });
 
     await this.prisma.forTenant(tenantId).auditLog.create({
-      data: { tenantId, userId, action: 'gpl_sent', entityType: 'case', entityId: caseId },
+      data: {
+        tenantId,
+        userId,
+        action: 'gpl_sent',
+        entityType: 'case',
+        entityId: caseId,
+      },
     });
 
     return { s3Key };

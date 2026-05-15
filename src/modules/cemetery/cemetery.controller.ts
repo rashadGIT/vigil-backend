@@ -7,7 +7,10 @@ import {
 } from '@nestjs/swagger';
 import { CemeteryService } from './cemetery.service';
 import { UpsertCemeteryDto } from './dto/upsert-cemetery.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('cemetery')
 @ApiBearerAuth()

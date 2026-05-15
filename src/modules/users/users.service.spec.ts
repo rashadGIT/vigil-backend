@@ -17,7 +17,9 @@ jest.mock('@aws-sdk/client-cognito-identity-provider');
 const mockSend = jest.fn();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -34,7 +36,9 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    (CognitoIdentityProviderClient as jest.Mock).mockImplementation(() => ({ send: mockSend }));
+    (CognitoIdentityProviderClient as jest.Mock).mockImplementation(() => ({
+      send: mockSend,
+    }));
 
     mockPrisma = createMockPrisma();
     scopedUser = { create: jest.fn(), findMany: jest.fn() };
@@ -61,7 +65,9 @@ describe('UsersService', () => {
 
     it('sends AdminCreateUserCommand to Cognito', async () => {
       mockSend
-        .mockResolvedValueOnce({ User: { Attributes: [{ Name: 'sub', Value: 'cognito-sub-123' }] } })
+        .mockResolvedValueOnce({
+          User: { Attributes: [{ Name: 'sub', Value: 'cognito-sub-123' }] },
+        })
         .mockResolvedValueOnce({});
       scopedUser.create.mockResolvedValue({ id: 'user-1' });
 
@@ -72,20 +78,29 @@ describe('UsersService', () => {
 
     it('sends AdminSetUserPasswordCommand after creating user', async () => {
       mockSend
-        .mockResolvedValueOnce({ User: { Attributes: [{ Name: 'sub', Value: 'sub-abc' }] } })
+        .mockResolvedValueOnce({
+          User: { Attributes: [{ Name: 'sub', Value: 'sub-abc' }] },
+        })
         .mockResolvedValueOnce({});
       scopedUser.create.mockResolvedValue({ id: 'user-1' });
 
       await service.create('tenant-a', dto);
 
-      expect(mockSend).toHaveBeenCalledWith(expect.any(AdminSetUserPasswordCommand));
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.any(AdminSetUserPasswordCommand),
+      );
     });
 
     it('calls forTenant and user.create with cognitoSub from Cognito response', async () => {
       mockSend
-        .mockResolvedValueOnce({ User: { Attributes: [{ Name: 'sub', Value: 'sub-xyz' }] } })
+        .mockResolvedValueOnce({
+          User: { Attributes: [{ Name: 'sub', Value: 'sub-xyz' }] },
+        })
         .mockResolvedValueOnce({});
-      scopedUser.create.mockResolvedValue({ id: 'user-1', cognitoSub: 'sub-xyz' });
+      scopedUser.create.mockResolvedValue({
+        id: 'user-1',
+        cognitoSub: 'sub-xyz',
+      });
 
       await service.create('tenant-a', dto);
 
@@ -104,9 +119,7 @@ describe('UsersService', () => {
     });
 
     it('uses empty string for cognitoSub when Cognito attributes are missing', async () => {
-      mockSend
-        .mockResolvedValueOnce({ User: {} })
-        .mockResolvedValueOnce({});
+      mockSend.mockResolvedValueOnce({ User: {} }).mockResolvedValueOnce({});
       scopedUser.create.mockResolvedValue({ id: 'user-1' });
 
       await service.create('tenant-a', dto);
@@ -135,7 +148,10 @@ describe('UsersService', () => {
     });
 
     it('returns the list of users', async () => {
-      const users = [{ id: 'user-1', name: 'Alice' }, { id: 'user-2', name: 'Bob' }];
+      const users = [
+        { id: 'user-1', name: 'Alice' },
+        { id: 'user-2', name: 'Bob' },
+      ];
       scopedUser.findMany.mockResolvedValue(users);
 
       const result = await service.findAll('tenant-a');

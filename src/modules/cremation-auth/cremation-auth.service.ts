@@ -14,9 +14,13 @@ export class CremationAuthService {
 
   async create(tenantId: string, caseId: string, dto: CreateCremationAuthDto) {
     const scoped = this.prisma.forTenant(tenantId);
-    const existing = await scoped.cremationAuthorization.findUnique({ where: { caseId } });
+    const existing = await scoped.cremationAuthorization.findUnique({
+      where: { caseId },
+    });
     if (existing) {
-      throw new ConflictException(`Cremation authorization already exists for case ${caseId}`);
+      throw new ConflictException(
+        `Cremation authorization already exists for case ${caseId}`,
+      );
     }
     return scoped.cremationAuthorization.create({
       data: {
@@ -29,17 +33,27 @@ export class CremationAuthService {
   }
 
   async findByCase(tenantId: string, caseId: string) {
-    const record = await this.prisma.forTenant(tenantId).cremationAuthorization.findUnique({
-      where: { caseId },
-    });
-    if (!record) throw new NotFoundException(`No cremation authorization found for case ${caseId}`);
+    const record = await this.prisma
+      .forTenant(tenantId)
+      .cremationAuthorization.findUnique({
+        where: { caseId },
+      });
+    if (!record)
+      throw new NotFoundException(
+        `No cremation authorization found for case ${caseId}`,
+      );
     return record;
   }
 
   async update(tenantId: string, caseId: string, dto: UpdateCremationAuthDto) {
     const scoped = this.prisma.forTenant(tenantId);
-    const existing = await scoped.cremationAuthorization.findUnique({ where: { caseId } });
-    if (!existing) throw new NotFoundException(`No cremation authorization found for case ${caseId}`);
+    const existing = await scoped.cremationAuthorization.findUnique({
+      where: { caseId },
+    });
+    if (!existing)
+      throw new NotFoundException(
+        `No cremation authorization found for case ${caseId}`,
+      );
     return scoped.cremationAuthorization.update({
       where: { id: existing.id },
       data: {
@@ -51,8 +65,13 @@ export class CremationAuthService {
 
   async clearWaitingPeriod(tenantId: string, caseId: string) {
     const scoped = this.prisma.forTenant(tenantId);
-    const record = await scoped.cremationAuthorization.findUnique({ where: { caseId } });
-    if (!record) throw new NotFoundException(`No cremation authorization found for case ${caseId}`);
+    const record = await scoped.cremationAuthorization.findUnique({
+      where: { caseId },
+    });
+    if (!record)
+      throw new NotFoundException(
+        `No cremation authorization found for case ${caseId}`,
+      );
     if (!record.authorizedAt) {
       throw new BadRequestException('Authorization has not been obtained yet');
     }
@@ -72,8 +91,13 @@ export class CremationAuthService {
 
   async markPerformed(tenantId: string, caseId: string) {
     const scoped = this.prisma.forTenant(tenantId);
-    const record = await scoped.cremationAuthorization.findUnique({ where: { caseId } });
-    if (!record) throw new NotFoundException(`No cremation authorization found for case ${caseId}`);
+    const record = await scoped.cremationAuthorization.findUnique({
+      where: { caseId },
+    });
+    if (!record)
+      throw new NotFoundException(
+        `No cremation authorization found for case ${caseId}`,
+      );
     if (!record.cremationClearedAt) {
       throw new BadRequestException(
         'Waiting period must be cleared before marking cremation as performed',

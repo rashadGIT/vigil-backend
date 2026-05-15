@@ -8,7 +8,10 @@ import {
 import { PriceListService } from './price-list.service';
 import { UpsertPriceListItemDto } from './dto/price-list-item.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('price-list')
 @ApiBearerAuth()
@@ -17,8 +20,13 @@ export class PriceListController {
   constructor(private readonly service: PriceListService) {}
 
   @Get('price-list')
-  @ApiOperation({ summary: 'List all price list items for the tenant (FTC GPL)' })
-  @ApiResponse({ status: 200, description: 'Returns array of price list items' })
+  @ApiOperation({
+    summary: 'List all price list items for the tenant (FTC GPL)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns array of price list items',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(@CurrentUser() user: AuthUser) {
     return this.service.findAll(user.tenantId);
@@ -48,7 +56,9 @@ export class PriceListController {
   }
 
   @Post('price-list/view')
-  @ApiOperation({ summary: 'Log a GPL view event for FTC compliance audit trail' })
+  @ApiOperation({
+    summary: 'Log a GPL view event for FTC compliance audit trail',
+  })
   @ApiResponse({ status: 201, description: 'View event logged' })
   logView(@CurrentUser() user: AuthUser) {
     return this.service.logGplView(user.tenantId, user.sub);
