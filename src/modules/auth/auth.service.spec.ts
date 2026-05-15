@@ -48,7 +48,11 @@ describe('AuthService', () => {
         },
       });
 
-      const result = await service.login('user@example.com', 'password', mockResponse);
+      const result = await service.login(
+        'user@example.com',
+        'password',
+        mockResponse,
+      );
 
       expect(result).toEqual({ accessToken: 'access-token-123' });
       expect(mockResponse.cookie).toHaveBeenCalledWith(
@@ -71,9 +75,9 @@ describe('AuthService', () => {
     it('throws UnauthorizedException when Cognito returns no AccessToken', async () => {
       mockSend.mockResolvedValueOnce({ AuthenticationResult: {} });
 
-      await expect(service.login('user@example.com', 'pass', mockResponse)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        service.login('user@example.com', 'pass', mockResponse),
+      ).rejects.toThrow(UnauthorizedException);
     });
 
     it('throws UnauthorizedException when Cognito send throws (NotAuthorizedException)', async () => {
@@ -81,17 +85,17 @@ describe('AuthService', () => {
       err.name = 'NotAuthorizedException';
       mockSend.mockRejectedValueOnce(err);
 
-      await expect(service.login('user@example.com', 'bad-pass', mockResponse)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        service.login('user@example.com', 'bad-pass', mockResponse),
+      ).rejects.toThrow(UnauthorizedException);
     });
 
     it('throws UnauthorizedException with "Invalid credentials" message on failure', async () => {
       mockSend.mockRejectedValueOnce(new Error('some error'));
 
-      await expect(service.login('user@example.com', 'pass', mockResponse)).rejects.toThrow(
-        'Invalid credentials',
-      );
+      await expect(
+        service.login('user@example.com', 'pass', mockResponse),
+      ).rejects.toThrow('Invalid credentials');
     });
   });
 
@@ -119,13 +123,17 @@ describe('AuthService', () => {
     it('throws UnauthorizedException when Cognito returns no AccessToken on refresh', async () => {
       mockSend.mockResolvedValueOnce({ AuthenticationResult: {} });
 
-      await expect(service.refresh('stale-token')).rejects.toThrow(UnauthorizedException);
+      await expect(service.refresh('stale-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('throws UnauthorizedException when Cognito throws on refresh', async () => {
       mockSend.mockRejectedValueOnce(new Error('Token expired'));
 
-      await expect(service.refresh('expired-token')).rejects.toThrow(UnauthorizedException);
+      await expect(service.refresh('expired-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -143,7 +151,9 @@ describe('AuthService', () => {
 
       await service.logout('access-token-abc', mockResponse);
 
-      expect(mockResponse.clearCookie).toHaveBeenCalledWith('refresh_token', { path: '/auth' });
+      expect(mockResponse.clearCookie).toHaveBeenCalledWith('refresh_token', {
+        path: '/auth',
+      });
     });
 
     it('returns { ok: true }', async () => {
@@ -157,7 +167,9 @@ describe('AuthService', () => {
     it('swallows Cognito errors on logout and still clears cookie', async () => {
       mockSend.mockRejectedValueOnce(new Error('Token already revoked'));
 
-      await expect(service.logout('bad-token', mockResponse)).resolves.toEqual({ ok: true });
+      await expect(service.logout('bad-token', mockResponse)).resolves.toEqual({
+        ok: true,
+      });
       expect(mockResponse.clearCookie).toHaveBeenCalled();
     });
   });

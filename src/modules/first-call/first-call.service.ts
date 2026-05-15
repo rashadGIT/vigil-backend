@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateFirstCallDto } from './dto/create-first-call.dto';
 import { UpdateFirstCallDto } from './dto/update-first-call.dto';
@@ -11,7 +15,9 @@ export class FirstCallService {
     const scoped = this.prisma.forTenant(tenantId);
     const existing = await scoped.firstCall.findUnique({ where: { caseId } });
     if (existing) {
-      throw new ConflictException(`First call record already exists for case ${caseId}`);
+      throw new ConflictException(
+        `First call record already exists for case ${caseId}`,
+      );
     }
     return scoped.firstCall.create({
       data: {
@@ -28,14 +34,20 @@ export class FirstCallService {
     const record = await this.prisma.forTenant(tenantId).firstCall.findUnique({
       where: { caseId },
     });
-    if (!record) throw new NotFoundException(`No first call record found for case ${caseId}`);
+    if (!record)
+      throw new NotFoundException(
+        `No first call record found for case ${caseId}`,
+      );
     return record;
   }
 
   async update(tenantId: string, caseId: string, dto: UpdateFirstCallDto) {
     const scoped = this.prisma.forTenant(tenantId);
     const existing = await scoped.firstCall.findUnique({ where: { caseId } });
-    if (!existing) throw new NotFoundException(`No first call record found for case ${caseId}`);
+    if (!existing)
+      throw new NotFoundException(
+        `No first call record found for case ${caseId}`,
+      );
     return scoped.firstCall.update({
       where: { id: existing.id },
       data: {

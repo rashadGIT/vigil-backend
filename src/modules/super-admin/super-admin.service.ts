@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
@@ -37,7 +41,8 @@ export class SuperAdminService {
     const existing = await this.prisma.tenant.findFirst({
       where: { OR: [{ slug: dto.slug }, { subdomain: dto.slug }] },
     });
-    if (existing) throw new ConflictException(`Slug "${dto.slug}" is already taken`);
+    if (existing)
+      throw new ConflictException(`Slug "${dto.slug}" is already taken`);
 
     return this.prisma.tenant.create({
       data: {
@@ -64,7 +69,9 @@ export class SuperAdminService {
   }
 
   async getTenantCases(tenantId: string) {
-    const tenant = await this.prisma.tenant.findUnique({ where: { id: tenantId } });
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+    });
     if (!tenant) throw new NotFoundException(`Tenant ${tenantId} not found`);
 
     // Cross-tenant query — intentionally bypasses forTenant(); super_admin only
@@ -83,14 +90,23 @@ export class SuperAdminService {
     });
   }
 
-  async createImpersonationToken(tenantId: string): Promise<{ token: string; expiresAt: string }> {
-    const tenant = await this.prisma.tenant.findUnique({ where: { id: tenantId } });
+  async createImpersonationToken(
+    tenantId: string,
+  ): Promise<{ token: string; expiresAt: string }> {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+    });
     if (!tenant) throw new NotFoundException(`Tenant ${tenantId} not found`);
-    if (!tenant.active) throw new ConflictException(`Tenant ${tenantId} is inactive`);
+    if (!tenant.active)
+      throw new ConflictException(`Tenant ${tenantId} is inactive`);
 
     const token = randomBytes(32).toString('hex');
     const exp = Date.now() + 60 * 60 * 1000; // 1 hour
-    this.impersonationTokens.set(token, { tenantId, role: 'funeral_director', exp });
+    this.impersonationTokens.set(token, {
+      tenantId,
+      role: 'funeral_director',
+      exp,
+    });
 
     // Clean up expired tokens opportunistically
     for (const [k, v] of this.impersonationTokens) {

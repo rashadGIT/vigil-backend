@@ -16,7 +16,9 @@ export class CronStubsService {
   async logPendingFollowUps(): Promise<void> {
     if (process.env.NODE_ENV === 'production') return;
     try {
-      const pending = await this.prisma.followUp.count({ where: { status: 'pending' } });
+      const pending = await this.prisma.followUp.count({
+        where: { status: 'pending' },
+      });
       this.logger.log(
         `[CRON STUB] ${pending} follow-ups pending — configure n8n Workflow 1 (Phase 9) to send real emails`,
       );

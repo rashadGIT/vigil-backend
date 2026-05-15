@@ -25,7 +25,7 @@ const DEMO_PASSWORD = 'Demo1234!';
 async function ensureCognitoUser(
   email: string,
   tenantId: string,
-  role: 'admin' | 'staff',
+  role: 'funeral_director' | 'staff',
 ): Promise<string> {
   // Deterministic offline stub — stable across re-runs (D-13).
   const stubSub = `cognito-sub-${email.replace('@', '-').replace(/\./g, '-')}`;
@@ -339,10 +339,10 @@ async function seedUsers(
   tenants: { sunrise: { id: string }; heritage: { id: string } },
 ) {
   const users = [
-    { email: 'director@sunrise.demo', name: 'Evelyn Park',     role: UserRole.admin, tenantId: tenants.sunrise.id },
-    { email: 'staff@sunrise.demo',    name: 'Marcus Lee',      role: UserRole.staff, tenantId: tenants.sunrise.id },
-    { email: 'director@heritage.demo',name: 'Nadia Brooks',    role: UserRole.admin, tenantId: tenants.heritage.id },
-    { email: 'staff@heritage.demo',   name: 'Darius Whitfield',role: UserRole.staff, tenantId: tenants.heritage.id },
+    { email: 'director@sunrise.demo', name: 'Evelyn Park',     role: UserRole.funeral_director, tenantId: tenants.sunrise.id },
+    { email: 'staff@sunrise.demo',    name: 'Marcus Lee',      role: UserRole.staff,            tenantId: tenants.sunrise.id },
+    { email: 'director@heritage.demo',name: 'Nadia Brooks',    role: UserRole.funeral_director, tenantId: tenants.heritage.id },
+    { email: 'staff@heritage.demo',   name: 'Darius Whitfield',role: UserRole.staff,            tenantId: tenants.heritage.id },
   ];
 
   for (const u of users) {

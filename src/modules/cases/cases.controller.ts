@@ -20,7 +20,10 @@ import { CasesService } from './cases.service';
 import { CreateCaseDto } from './dto/create-case.dto';
 import { UpdateCaseDto } from './dto/update-case.dto';
 import { CaseFilterDto } from './dto/case-filter.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('cases')
 @ApiBearerAuth()
@@ -38,8 +41,16 @@ export class CasesController {
 
   @Get('reports/revenue')
   @ApiOperation({ summary: 'Revenue report' })
-  @ApiQuery({ name: 'from', required: true, description: 'ISO date string (inclusive)' })
-  @ApiQuery({ name: 'to', required: true, description: 'ISO date string (inclusive)' })
+  @ApiQuery({
+    name: 'from',
+    required: true,
+    description: 'ISO date string (inclusive)',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: true,
+    description: 'ISO date string (inclusive)',
+  })
   @ApiResponse({ status: 200 })
   getRevenueReport(
     @CurrentUser() user: AuthUser,

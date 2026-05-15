@@ -21,18 +21,26 @@ export class ContactsService {
   }
 
   async update(tenantId: string, id: string, dto: UpdateContactDto) {
-    const existing = await this.prisma.forTenant(tenantId).familyContact.findFirst({
-      where: { id },
-    });
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .familyContact.findFirst({
+        where: { id },
+      });
     if (!existing) throw new NotFoundException(`Contact ${id} not found`);
-    return this.prisma.forTenant(tenantId).familyContact.update({ where: { id }, data: dto });
+    return this.prisma
+      .forTenant(tenantId)
+      .familyContact.update({ where: { id }, data: dto });
   }
 
   async remove(tenantId: string, id: string) {
-    const existing = await this.prisma.forTenant(tenantId).familyContact.findFirst({
-      where: { id },
-    });
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .familyContact.findFirst({
+        where: { id },
+      });
     if (!existing) throw new NotFoundException(`Contact ${id} not found`);
-    return this.prisma.forTenant(tenantId).familyContact.delete({ where: { id } });
+    return this.prisma
+      .forTenant(tenantId)
+      .familyContact.delete({ where: { id } });
   }
 }

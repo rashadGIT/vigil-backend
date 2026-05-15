@@ -19,13 +19,19 @@ export class VendorsService {
   }
 
   create(tenantId: string, dto: UpsertVendorDto) {
-    return this.prisma.forTenant(tenantId).vendor.create({ data: { ...dto, tenantId } });
+    return this.prisma
+      .forTenant(tenantId)
+      .vendor.create({ data: { ...dto, tenantId } });
   }
 
   async update(tenantId: string, id: string, dto: UpsertVendorDto) {
-    const existing = await this.prisma.forTenant(tenantId).vendor.findFirst({ where: { id } });
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .vendor.findFirst({ where: { id } });
     if (!existing) throw new NotFoundException(`Vendor ${id} not found`);
-    return this.prisma.forTenant(tenantId).vendor.update({ where: { id }, data: dto });
+    return this.prisma
+      .forTenant(tenantId)
+      .vendor.update({ where: { id }, data: dto });
   }
 
   async softDelete(tenantId: string, id: string) {
@@ -36,9 +42,16 @@ export class VendorsService {
   }
 
   async assignToCase(tenantId: string, caseId: string, dto: AssignVendorDto) {
-    const assignment = await this.prisma.forTenant(tenantId).vendorAssignment.create({
-      data: { tenantId, caseId, vendorId: dto.vendorId, role: dto.role ?? null },
-    });
+    const assignment = await this.prisma
+      .forTenant(tenantId)
+      .vendorAssignment.create({
+        data: {
+          tenantId,
+          caseId,
+          vendorId: dto.vendorId,
+          role: dto.role ?? null,
+        },
+      });
     // VEND-03 — fire staff notification via n8n
     await this.n8n.trigger(N8nEvent.STAFF_NOTIFY, {
       event: 'vendor_assigned',

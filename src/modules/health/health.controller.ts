@@ -20,8 +20,15 @@ export class HealthController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'Health check — reports DB and Redis connectivity' })
-  @ApiResponse({ status: 200, description: 'Returns status, db, and redis states' })
-  async health(): Promise<{ status: 'ok' | 'degraded'; db: string; redis: RedisState }> {
+  @ApiResponse({
+    status: 200,
+    description: 'Returns status, db, and redis states',
+  })
+  async health(): Promise<{
+    status: 'ok' | 'degraded';
+    db: string;
+    redis: RedisState;
+  }> {
     let db: 'ok' | 'error' = 'ok';
     try {
       await this.prisma.$queryRaw`SELECT 1`;

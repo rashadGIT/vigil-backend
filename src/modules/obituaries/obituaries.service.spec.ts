@@ -8,12 +8,18 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('ObituariesService', () => {
   let service: ObituariesService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
-  let scopedObituary: { findFirst: jest.Mock; upsert: jest.Mock; update: jest.Mock };
+  let scopedObituary: {
+    findFirst: jest.Mock;
+    upsert: jest.Mock;
+    update: jest.Mock;
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -49,13 +55,17 @@ describe('ObituariesService', () => {
     it('throws NotFoundException when case is not found', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
-      await expect(service.generate('tenant-a', 'case-1')).rejects.toThrow(NotFoundException);
+      await expect(service.generate('tenant-a', 'case-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException containing the caseId', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
-      await expect(service.generate('tenant-a', 'case-99')).rejects.toThrow('case-99');
+      await expect(service.generate('tenant-a', 'case-99')).rejects.toThrow(
+        'case-99',
+      );
     });
 
     it('calls obituary.upsert with draft status and generated text', async () => {
@@ -67,7 +77,11 @@ describe('ObituariesService', () => {
       expect(scopedObituary.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { caseId: 'case-1' },
-          create: expect.objectContaining({ status: 'draft', tenantId: 'tenant-a', caseId: 'case-1' }),
+          create: expect.objectContaining({
+            status: 'draft',
+            tenantId: 'tenant-a',
+            caseId: 'case-1',
+          }),
         }),
       );
     });
@@ -90,7 +104,9 @@ describe('ObituariesService', () => {
     it('includes primary contact name in generated text when contact exists', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({
         ...baseCase,
-        familyContacts: [{ name: 'Jane Doe', relationship: 'spouse', isPrimaryContact: true }],
+        familyContacts: [
+          { name: 'Jane Doe', relationship: 'spouse', isPrimaryContact: true },
+        ],
       });
       scopedObituary.upsert.mockResolvedValue({ id: 'ob-1' });
 
@@ -114,20 +130,29 @@ describe('ObituariesService', () => {
     it('throws NotFoundException when no obituary exists', async () => {
       scopedObituary.findFirst.mockResolvedValue(null);
 
-      await expect(service.findByCase('tenant-a', 'case-1')).rejects.toThrow(NotFoundException);
+      await expect(service.findByCase('tenant-a', 'case-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('update', () => {
     it('calls obituary.update with provided text and optional status', async () => {
-      scopedObituary.update.mockResolvedValue({ id: 'ob-1', draftText: 'updated text', status: 'approved' });
+      scopedObituary.update.mockResolvedValue({
+        id: 'ob-1',
+        draftText: 'updated text',
+        status: 'approved',
+      });
 
       await service.update('tenant-a', 'case-1', 'updated text', 'approved');
 
       expect(scopedObituary.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { caseId: 'case-1' },
-          data: expect.objectContaining({ draftText: 'updated text', status: 'approved' }),
+          data: expect.objectContaining({
+            draftText: 'updated text',
+            status: 'approved',
+          }),
         }),
       );
     });

@@ -20,7 +20,12 @@ export class FollowUpsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async scheduleForCase(tenantId: string, caseId: string, contactId: string, baseDate = new Date()) {
+  async scheduleForCase(
+    tenantId: string,
+    caseId: string,
+    contactId: string,
+    baseDate = new Date(),
+  ) {
     const scoped = this.prisma.forTenant(tenantId);
     const templates = Object.keys(OFFSETS) as FollowUpTemplate[];
 
@@ -33,7 +38,9 @@ export class FollowUpsService {
               caseId,
               contactId,
               templateType,
-              scheduledAt: new Date(baseDate.getTime() + OFFSETS[templateType] * 24 * 3600 * 1000),
+              scheduledAt: new Date(
+                baseDate.getTime() + OFFSETS[templateType] * 24 * 3600 * 1000,
+              ),
             },
           }),
         ),
@@ -50,7 +57,9 @@ export class FollowUpsService {
       familyEmail: contact?.email ?? '',
       familyLastName: contact?.name?.split(' ').pop() ?? '',
       funeralHomeName: tenant?.name ?? '',
-      sesFromAddress: this.configService.get<string>('SES_FROM_ADDRESS') ?? 'noreply@kelovaapp.com',
+      sesFromAddress:
+        this.configService.get<string>('SES_FROM_ADDRESS') ??
+        'noreply@kelovaapp.com',
     });
 
     return created;
@@ -63,7 +72,10 @@ export class FollowUpsService {
     });
   }
 
-  async markAllComplete(tenantId: string, caseId: string): Promise<{ updatedCount: number }> {
+  async markAllComplete(
+    tenantId: string,
+    caseId: string,
+  ): Promise<{ updatedCount: number }> {
     const result = await this.prisma.forTenant(tenantId).followUp.updateMany({
       where: { caseId, status: 'pending' },
       data: { status: 'sent', sentAt: new Date() },

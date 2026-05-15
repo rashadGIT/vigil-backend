@@ -1,8 +1,16 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { ReferralsService } from './referrals.service';
 import { CreateReferralDto } from './dto/create-referral.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('referrals')
 @ApiBearerAuth()

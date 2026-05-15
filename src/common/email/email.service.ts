@@ -20,7 +20,9 @@ export class EmailService {
 
   constructor(private readonly configService: ConfigService) {
     this.provider =
-      (this.configService.get<'resend' | 'ses'>('EMAIL_PROVIDER') as 'resend' | 'ses') ?? 'resend';
+      (this.configService.get<'resend' | 'ses'>('EMAIL_PROVIDER') as
+        | 'resend'
+        | 'ses') ?? 'resend';
     this.defaultFrom =
       this.configService.get<string>('EMAIL_FROM') ?? 'noreply@kelovaapp.com';
     if (this.provider === 'resend') {
@@ -40,10 +42,17 @@ export class EmailService {
     try {
       if (this.provider === 'resend') {
         if (!this.resend) {
-          this.logger.warn('[PLACEHOLDER] RESEND_API_KEY not set — email not sent');
+          this.logger.warn(
+            '[PLACEHOLDER] RESEND_API_KEY not set — email not sent',
+          );
           return;
         }
-        await this.resend.emails.send({ from, to: params.to, subject: params.subject, html: params.html });
+        await this.resend.emails.send({
+          from,
+          to: params.to,
+          subject: params.subject,
+          html: params.html,
+        });
       } else {
         await this.ses!.send(
           new SendEmailCommand({
