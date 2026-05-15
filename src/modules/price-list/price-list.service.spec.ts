@@ -10,16 +10,25 @@ import { S3Service } from '../documents/s3.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('PriceListService', () => {
   let service: PriceListService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
-  let scopedPriceListItem: { findMany: jest.Mock; create: jest.Mock; findFirst: jest.Mock; update: jest.Mock };
+  let scopedPriceListItem: {
+    findMany: jest.Mock;
+    create: jest.Mock;
+    findFirst: jest.Mock;
+    update: jest.Mock;
+  };
   let scopedDocument: { create: jest.Mock };
   let scopedAuditLog: { create: jest.Mock };
 
-  const mockPdf = { generateGpl: jest.fn().mockResolvedValue(Buffer.from('pdf')) };
+  const mockPdf = {
+    generateGpl: jest.fn().mockResolvedValue(Buffer.from('pdf')),
+  };
   const mockS3 = {
     buildKey: jest.fn().mockReturnValue('tenants/tenant-a/case-1/gpl.pdf'),
     uploadBuffer: jest.fn().mockResolvedValue(undefined),
@@ -80,15 +89,26 @@ describe('PriceListService', () => {
 
   describe('create', () => {
     it('calls forTenant and priceListItem.create with tenantId injected', async () => {
-      const dto = { name: 'Basic Service', price: 1500, category: 'services' } as any;
-      scopedPriceListItem.create.mockResolvedValue({ id: 'item-1', tenantId: 'tenant-a', ...dto });
+      const dto = {
+        name: 'Basic Service',
+        price: 1500,
+        category: 'services',
+      } as any;
+      scopedPriceListItem.create.mockResolvedValue({
+        id: 'item-1',
+        tenantId: 'tenant-a',
+        ...dto,
+      });
 
       const result = await service.create('tenant-a', dto);
 
       expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-a');
       expect(scopedPriceListItem.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ tenantId: 'tenant-a', name: 'Basic Service' }),
+          data: expect.objectContaining({
+            tenantId: 'tenant-a',
+            name: 'Basic Service',
+          }),
         }),
       );
       expect(result).toHaveProperty('id', 'item-1');
@@ -112,13 +132,17 @@ describe('PriceListService', () => {
     it('throws NotFoundException when item does not exist', async () => {
       scopedPriceListItem.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('tenant-a', 'missing', {} as any)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('tenant-a', 'missing', {} as any),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('throws NotFoundException with item id in message', async () => {
       scopedPriceListItem.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('tenant-a', 'item-99', {} as any)).rejects.toThrow('item-99');
+      await expect(
+        service.update('tenant-a', 'item-99', {} as any),
+      ).rejects.toThrow('item-99');
     });
   });
 
@@ -141,7 +165,11 @@ describe('PriceListService', () => {
       scopedDocument.create.mockResolvedValue({});
       scopedAuditLog.create.mockResolvedValue({});
 
-      const result = await service.generateGplPdf('tenant-a', 'case-1', 'user-1');
+      const result = await service.generateGplPdf(
+        'tenant-a',
+        'case-1',
+        'user-1',
+      );
 
       expect(result).toHaveProperty('s3Key');
     });

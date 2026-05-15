@@ -20,7 +20,12 @@ describe('TaskTemplatesService', () => {
 
   describe('tenant and case ID injection', () => {
     it('injects tenantId on every task for all service types', () => {
-      for (const type of ['burial', 'cremation', 'graveside', 'memorial'] as ServiceType[]) {
+      for (const type of [
+        'burial',
+        'cremation',
+        'graveside',
+        'memorial',
+      ] as ServiceType[]) {
         const tasks = svc.buildTasksForCase('tenant-a', 'case-1', type);
         expect(tasks.every((t) => t.tenantId === 'tenant-a')).toBe(true);
       }

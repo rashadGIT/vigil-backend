@@ -3,17 +3,24 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import serverlessExpress from '@codegenie/serverless-express';
 import helmet from 'helmet';
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import {
+  GetSecretValueCommand,
+  SecretsManagerClient,
+} from '@aws-sdk/client-secrets-manager';
 import { AppModule } from './app.module';
 import type { Handler } from 'aws-lambda';
 
 let handler: Handler;
 
 async function loadSecrets(): Promise<void> {
-  const client = new SecretsManagerClient({ region: process.env.AWS_REGION ?? 'us-east-2' });
+  const client = new SecretsManagerClient({
+    region: process.env.AWS_REGION ?? 'us-east-2',
+  });
 
   if (!process.env.DATABASE_URL) {
-    const res = await client.send(new GetSecretValueCommand({ SecretId: 'vigil/rds/credentials' }));
+    const res = await client.send(
+      new GetSecretValueCommand({ SecretId: 'vigil/rds/credentials' }),
+    );
     const s = JSON.parse(res.SecretString!);
     process.env.DATABASE_URL =
       `postgresql://${s.username}:${encodeURIComponent(s.password)}` +
@@ -21,7 +28,9 @@ async function loadSecrets(): Promise<void> {
   }
 
   if (!process.env.COGNITO_USER_POOL_ID || !process.env.COGNITO_CLIENT_ID) {
-    const res = await client.send(new GetSecretValueCommand({ SecretId: 'vigil/cognito/config' }));
+    const res = await client.send(
+      new GetSecretValueCommand({ SecretId: 'vigil/cognito/config' }),
+    );
     const c = JSON.parse(res.SecretString!);
     process.env.COGNITO_USER_POOL_ID = c.userPoolId;
     process.env.COGNITO_CLIENT_ID = c.clientId;
@@ -52,7 +61,12 @@ export const lambdaHandler: Handler = async (event, context, callback) => {
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'x-dev-user', 'x-kelova-internal-key'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'x-dev-user',
+        'x-kelova-internal-key',
+      ],
     });
 
     await app.init();

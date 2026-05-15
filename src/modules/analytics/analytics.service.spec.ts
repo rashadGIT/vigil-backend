@@ -7,7 +7,9 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
@@ -62,7 +64,12 @@ describe('AnalyticsService', () => {
     it('filters by date range when from and to are provided', async () => {
       scopedSnapshot.findMany.mockResolvedValue([]);
 
-      await service.getSnapshot('tenant-a', undefined, '2025-01-01', '2025-12-31');
+      await service.getSnapshot(
+        'tenant-a',
+        undefined,
+        '2025-01-01',
+        '2025-12-31',
+      );
 
       expect(scopedSnapshot.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -102,7 +109,9 @@ describe('AnalyticsService', () => {
         { status: 'new', _count: 3 },
         { status: 'completed', _count: 1 },
       ]);
-      scopedPayment.aggregate.mockResolvedValue({ _sum: { amountPaid: 10000 } });
+      scopedPayment.aggregate.mockResolvedValue({
+        _sum: { amountPaid: 10000 },
+      });
       scopedSnapshot.create.mockResolvedValue({ id: 'snap-new' });
     });
 
@@ -146,7 +155,11 @@ describe('AnalyticsService', () => {
     });
 
     it('returns the created snapshot', async () => {
-      const result = await service.computeAndSave('tenant-a', 'monthly', '2025-01-01');
+      const result = await service.computeAndSave(
+        'tenant-a',
+        'monthly',
+        '2025-01-01',
+      );
 
       expect(result).toHaveProperty('id', 'snap-new');
     });

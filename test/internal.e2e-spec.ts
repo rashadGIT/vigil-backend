@@ -28,7 +28,9 @@ describe('Internal API (contract)', () => {
   beforeAll(async () => {
     process.env.DEV_AUTH_BYPASS = 'true';
     process.env.INTERNAL_API_KEY = VALID_KEY;
-    process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://vigil:vigil@localhost:5432/vigil_dev';
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL ||
+      'postgresql://vigil:vigil@localhost:5432/vigil_dev';
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -38,7 +40,9 @@ describe('Internal API (contract)', () => {
       .compile();
 
     app = moduleRef.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    );
     await app.init();
   });
 
@@ -49,8 +53,9 @@ describe('Internal API (contract)', () => {
   });
 
   it('POST /internal/documents/generate-service-program/:id without key returns 401 or 403', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/internal/documents/generate-service-program/case-123');
+    const res = await request(app.getHttpServer()).post(
+      '/internal/documents/generate-service-program/case-123',
+    );
     expect([401, 403]).toContain(res.status);
   });
 

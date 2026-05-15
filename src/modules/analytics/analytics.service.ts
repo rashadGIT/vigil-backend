@@ -5,7 +5,12 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 export class AnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getSnapshot(tenantId: string, period?: string, from?: string, to?: string) {
+  async getSnapshot(
+    tenantId: string,
+    period?: string,
+    from?: string,
+    to?: string,
+  ) {
     const scoped = this.prisma.forTenant(tenantId);
     const where: Record<string, unknown> = {};
     if (period) where['period'] = period;
@@ -33,9 +38,15 @@ export class AnalyticsService {
       }),
       scoped.case.groupBy({
         by: ['assignedToId'],
-        where: { deletedAt: null, archivedAt: null, status: { notIn: ['archived'] } },
+        where: {
+          deletedAt: null,
+          archivedAt: null,
+          status: { notIn: ['archived'] },
+        },
         _count: { id: true },
-      }) as Promise<Array<{ assignedToId: string | null; _count: { id: number } }>>,
+      }) as Promise<
+        Array<{ assignedToId: string | null; _count: { id: number } }>
+      >,
       scoped.task.findMany({
         where: { completed: false, dueDate: { lt: now } },
         select: { caseId: true },
@@ -52,14 +63,19 @@ export class AnalyticsService {
           })
         : [];
 
-    const caseToUser = new Map(caseAssignments.map((c) => [c.id, c.assignedToId]));
+    const caseToUser = new Map(
+      caseAssignments.map((c) => [c.id, c.assignedToId]),
+    );
     const overdueByUser = new Map<string, number>();
     for (const task of overdueTasks) {
       const userId = caseToUser.get(task.caseId) ?? null;
-      if (userId) overdueByUser.set(userId, (overdueByUser.get(userId) ?? 0) + 1);
+      if (userId)
+        overdueByUser.set(userId, (overdueByUser.get(userId) ?? 0) + 1);
     }
 
-    const activeCaseByUser = new Map(activeCases.map((r) => [r.assignedToId, r._count.id]));
+    const activeCaseByUser = new Map(
+      activeCases.map((r) => [r.assignedToId, r._count.id]),
+    );
 
     return users.map((u) => ({
       id: u.id,

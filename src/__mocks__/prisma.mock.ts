@@ -46,7 +46,9 @@ export function createMockPrisma() {
   // $transaction mock: invokes callback with a tx shaped like scoped client
   const txClient = makeScopedClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const $transaction = jest.fn().mockImplementation(async (cb: any) => cb(txClient) as Promise<unknown>);
+  const $transaction = jest
+    .fn()
+    .mockImplementation(async (cb: any) => cb(txClient) as Promise<unknown>);
 
   const forTenant = jest.fn().mockReturnValue(scoped);
 

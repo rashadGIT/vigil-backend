@@ -8,7 +8,9 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('ContactsService', () => {
   let service: ContactsService;
@@ -48,8 +50,17 @@ describe('ContactsService', () => {
 
   describe('create', () => {
     it('calls forTenant and familyContact.create with correct data', async () => {
-      const dto = { name: 'Jane Doe', relationship: 'spouse', isPrimaryContact: true } as any;
-      const expected = { id: 'contact-1', caseId: 'case-1', tenantId: 'tenant-a', ...dto };
+      const dto = {
+        name: 'Jane Doe',
+        relationship: 'spouse',
+        isPrimaryContact: true,
+      } as any;
+      const expected = {
+        id: 'contact-1',
+        caseId: 'case-1',
+        tenantId: 'tenant-a',
+        ...dto,
+      };
       scopedContact.create.mockResolvedValue(expected);
 
       const result = await service.create('tenant-a', 'case-1', dto);
@@ -57,7 +68,11 @@ describe('ContactsService', () => {
       expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-a');
       expect(scopedContact.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ caseId: 'case-1', tenantId: 'tenant-a', name: 'Jane Doe' }),
+          data: expect.objectContaining({
+            caseId: 'case-1',
+            tenantId: 'tenant-a',
+            name: 'Jane Doe',
+          }),
         }),
       );
       expect(result).toEqual(expected);
@@ -105,13 +120,17 @@ describe('ContactsService', () => {
     it('throws NotFoundException when contact does not exist', async () => {
       scopedContact.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('tenant-a', 'missing-id', {} as any)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('tenant-a', 'missing-id', {} as any),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('throws NotFoundException with contact id in message', async () => {
       scopedContact.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('tenant-a', 'contact-99', {} as any)).rejects.toThrow('contact-99');
+      await expect(
+        service.update('tenant-a', 'contact-99', {} as any),
+      ).rejects.toThrow('contact-99');
     });
   });
 
@@ -131,7 +150,9 @@ describe('ContactsService', () => {
     it('throws NotFoundException when contact does not exist', async () => {
       scopedContact.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove('tenant-a', 'missing-id')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('tenant-a', 'missing-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  GetObjectCommand,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'node:crypto';
 
@@ -13,7 +18,9 @@ export class S3Service {
     this.client = new S3Client({
       region: this.configService.get<string>('AWS_REGION') ?? 'us-east-2',
     });
-    this.bucket = this.configService.get<string>('S3_DOCUMENTS_BUCKET') ?? 'vigil-documents-dev';
+    this.bucket =
+      this.configService.get<string>('S3_DOCUMENTS_BUCKET') ??
+      'vigil-documents-dev';
   }
 
   buildKey(tenantId: string, caseId: string, fileName: string): string {
@@ -35,7 +42,11 @@ export class S3Service {
     return getSignedUrl(this.client, cmd, { expiresIn: 900 }); // 15 minutes (DOCS-02)
   }
 
-  async uploadBuffer(key: string, body: Buffer, contentType: string): Promise<void> {
+  async uploadBuffer(
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void> {
     await this.client.send(
       new PutObjectCommand({
         Bucket: this.bucket,
@@ -47,6 +58,8 @@ export class S3Service {
   }
 
   async deleteObject(key: string): Promise<void> {
-    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+    await this.client.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
   }
 }

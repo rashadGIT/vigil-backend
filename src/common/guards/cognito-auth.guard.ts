@@ -54,10 +54,10 @@ export class CognitoAuthGuard implements CanActivate {
     if (isPublic) return true;
 
     // Skip @InternalOnly() routes — InternalOnlyGuard handles them
-    const isInternal = this.reflector.getAllAndOverride<boolean>(IS_INTERNAL_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const isInternal = this.reflector.getAllAndOverride<boolean>(
+      IS_INTERNAL_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (isInternal) return true;
 
     const request = context.switchToHttp().getRequest();
@@ -89,16 +89,23 @@ export class CognitoAuthGuard implements CanActivate {
     const token =
       authHeader?.replace('Bearer ', '') ??
       (request.cookies?.['access_token'] as string | undefined);
-    if (!token) throw new UnauthorizedException('Missing Bearer token or access_token cookie');
+    if (!token)
+      throw new UnauthorizedException(
+        'Missing Bearer token or access_token cookie',
+      );
 
     const verifier = this.getVerifier();
     if (!verifier) {
-      this.logger.error('COGNITO_USER_POOL_ID / COGNITO_CLIENT_ID not configured');
+      this.logger.error(
+        'COGNITO_USER_POOL_ID / COGNITO_CLIENT_ID not configured',
+      );
       throw new UnauthorizedException('Auth not configured');
     }
 
     try {
-      const payload = (await verifier.verify(token)) as unknown as CognitoAccessTokenClaims;
+      const payload = (await verifier.verify(
+        token,
+      )) as unknown as CognitoAccessTokenClaims;
 
       // Look up the user in the DB by cognitoSub to get tenantId and role.
       // Cognito access tokens do not include custom attributes (only ID tokens do),

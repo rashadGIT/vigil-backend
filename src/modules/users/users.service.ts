@@ -53,22 +53,34 @@ export class UsersService {
     );
 
     const cognitoSub =
-      cognitoResult.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ?? '';
+      cognitoResult.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ??
+      '';
 
     return this.prisma.forTenant(tenantId).user.create({
-      data: { tenantId, email: dto.email, name: dto.name, role: dto.role, cognitoSub },
+      data: {
+        tenantId,
+        email: dto.email,
+        name: dto.name,
+        role: dto.role,
+        cognitoSub,
+      },
     });
   }
 
   async invite(tenantId: string, dto: InviteUserDto) {
     const userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID');
-    const appDomain = this.configService.get<string>('APP_DOMAIN') ?? 'kelovaapp.com';
+    const appDomain =
+      this.configService.get<string>('APP_DOMAIN') ?? 'kelovaapp.com';
 
-    const tenant = await this.prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { name: true } });
+    const tenant = await this.prisma.tenant.findUniqueOrThrow({
+      where: { id: tenantId },
+      select: { name: true },
+    });
     const funeralHomeName = tenant.name;
 
     // Generate a cryptographically secure temp password
-    const tempPassword = randomBytes(12).toString('base64').slice(0, 16) + '!A1';
+    const tempPassword =
+      randomBytes(12).toString('base64').slice(0, 16) + '!A1';
 
     let cognitoSub = '';
     try {
@@ -88,17 +100,27 @@ export class UsersService {
           TemporaryPassword: tempPassword,
         }),
       );
-      cognitoSub = cognitoResult.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ?? '';
+      cognitoSub =
+        cognitoResult.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ??
+        '';
     } catch (err) {
       if (err instanceof UsernameExistsException) {
-        throw new ConflictException(`A user with email ${dto.email} already exists`);
+        throw new ConflictException(
+          `A user with email ${dto.email} already exists`,
+        );
       }
       throw err;
     }
 
     // Mirror user in Prisma
     const user = await this.prisma.forTenant(tenantId).user.create({
-      data: { tenantId, email: dto.email, name: dto.name, role: dto.role, cognitoSub },
+      data: {
+        tenantId,
+        email: dto.email,
+        name: dto.name,
+        role: dto.role,
+        cognitoSub,
+      },
     });
 
     // Send branded invite email

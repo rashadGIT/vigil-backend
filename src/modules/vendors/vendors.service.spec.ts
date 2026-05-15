@@ -10,14 +10,21 @@ import { N8nEvent } from '../n8n/n8n-events.enum';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('VendorsService', () => {
   let service: VendorsService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
   const mockN8n = { trigger: jest.fn().mockResolvedValue(undefined) };
 
-  let scopedVendor: { findMany: jest.Mock; create: jest.Mock; findFirst: jest.Mock; update: jest.Mock };
+  let scopedVendor: {
+    findMany: jest.Mock;
+    create: jest.Mock;
+    findFirst: jest.Mock;
+    update: jest.Mock;
+  };
   let scopedVendorAssignment: { create: jest.Mock; findMany: jest.Mock };
 
   beforeEach(async () => {
@@ -76,14 +83,21 @@ describe('VendorsService', () => {
   describe('create', () => {
     it('calls forTenant and vendor.create with tenantId injected', async () => {
       const dto = { name: 'Acme Flowers', type: 'florist' } as any;
-      scopedVendor.create.mockResolvedValue({ id: 'vendor-1', tenantId: 'tenant-a', ...dto });
+      scopedVendor.create.mockResolvedValue({
+        id: 'vendor-1',
+        tenantId: 'tenant-a',
+        ...dto,
+      });
 
       const result = await service.create('tenant-a', dto);
 
       expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-a');
       expect(scopedVendor.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ tenantId: 'tenant-a', name: 'Acme Flowers' }),
+          data: expect.objectContaining({
+            tenantId: 'tenant-a',
+            name: 'Acme Flowers',
+          }),
         }),
       );
       expect(result).toHaveProperty('id', 'vendor-1');
@@ -107,19 +121,26 @@ describe('VendorsService', () => {
     it('throws NotFoundException when vendor does not exist', async () => {
       scopedVendor.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('tenant-a', 'missing', {} as any)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('tenant-a', 'missing', {} as any),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('throws NotFoundException with vendor id in message', async () => {
       scopedVendor.findFirst.mockResolvedValue(null);
 
-      await expect(service.update('tenant-a', 'vendor-99', {} as any)).rejects.toThrow('vendor-99');
+      await expect(
+        service.update('tenant-a', 'vendor-99', {} as any),
+      ).rejects.toThrow('vendor-99');
     });
   });
 
   describe('softDelete', () => {
     it('sets deletedAt on vendor record', async () => {
-      scopedVendor.update.mockResolvedValue({ id: 'vendor-1', deletedAt: new Date() });
+      scopedVendor.update.mockResolvedValue({
+        id: 'vendor-1',
+        deletedAt: new Date(),
+      });
 
       await service.softDelete('tenant-a', 'vendor-1');
 
@@ -134,19 +155,33 @@ describe('VendorsService', () => {
 
   describe('assignToCase', () => {
     it('creates vendor assignment and triggers STAFF_NOTIFY', async () => {
-      const assignment = { id: 'assign-1', vendorId: 'vendor-1', caseId: 'case-1' };
+      const assignment = {
+        id: 'assign-1',
+        vendorId: 'vendor-1',
+        caseId: 'case-1',
+      };
       scopedVendorAssignment.create.mockResolvedValue(assignment);
 
-      const result = await service.assignToCase('tenant-a', 'case-1', { vendorId: 'vendor-1' });
+      const result = await service.assignToCase('tenant-a', 'case-1', {
+        vendorId: 'vendor-1',
+      });
 
       expect(scopedVendorAssignment.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ tenantId: 'tenant-a', caseId: 'case-1', vendorId: 'vendor-1' }),
+          data: expect.objectContaining({
+            tenantId: 'tenant-a',
+            caseId: 'case-1',
+            vendorId: 'vendor-1',
+          }),
         }),
       );
       expect(mockN8n.trigger).toHaveBeenCalledWith(
         N8nEvent.STAFF_NOTIFY,
-        expect.objectContaining({ event: 'vendor_assigned', tenantId: 'tenant-a', caseId: 'case-1' }),
+        expect.objectContaining({
+          event: 'vendor_assigned',
+          tenantId: 'tenant-a',
+          caseId: 'case-1',
+        }),
       );
       expect(result).toEqual(assignment);
     });
@@ -154,7 +189,10 @@ describe('VendorsService', () => {
     it('passes role from dto when provided', async () => {
       scopedVendorAssignment.create.mockResolvedValue({ id: 'assign-1' });
 
-      await service.assignToCase('tenant-a', 'case-1', { vendorId: 'vendor-1', role: 'embalmer' });
+      await service.assignToCase('tenant-a', 'case-1', {
+        vendorId: 'vendor-1',
+        role: 'embalmer',
+      });
 
       expect(scopedVendorAssignment.create).toHaveBeenCalledWith(
         expect.objectContaining({

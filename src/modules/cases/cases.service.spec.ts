@@ -12,7 +12,9 @@ import { N8nEvent } from '../n8n/n8n-events.enum';
 
 // Cast helpers to avoid Prisma return-type inference issues on jest mocks
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('CasesService', () => {
   let service: CasesService;
@@ -43,7 +45,10 @@ describe('CasesService', () => {
       expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-a');
       expect(mockPrisma._scoped.case.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ tenantId: 'tenant-a', deceasedName: 'John Doe' }),
+          data: expect.objectContaining({
+            tenantId: 'tenant-a',
+            deceasedName: 'John Doe',
+          }),
         }),
       );
       expect(result).toEqual(expected);
@@ -56,11 +61,14 @@ describe('CasesService', () => {
         deceasedDob: '1940-05-10',
         deceasedDod: '2025-01-01',
       };
-      asMock(mockPrisma._scoped.case.create).mockResolvedValue({ id: 'case-2' });
+      asMock(mockPrisma._scoped.case.create).mockResolvedValue({
+        id: 'case-2',
+      });
 
       await service.create('tenant-a', dto);
 
-      const callData = asMock(mockPrisma._scoped.case.create).mock.calls[0][0].data;
+      const callData = asMock(mockPrisma._scoped.case.create).mock.calls[0][0]
+        .data;
       expect(callData.deceasedDob).toBeInstanceOf(Date);
       expect(callData.deceasedDod).toBeInstanceOf(Date);
     });
@@ -87,7 +95,10 @@ describe('CasesService', () => {
 
       expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ status: CaseStatus.in_progress, deletedAt: null }),
+          where: expect.objectContaining({
+            status: CaseStatus.in_progress,
+            deletedAt: null,
+          }),
         }),
       );
     });
@@ -118,22 +129,35 @@ describe('CasesService', () => {
     it('throws NotFoundException when case.findFirst returns null', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
-      await expect(service.findOne('tenant-a', 'missing-id')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('tenant-a', 'missing-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException with case id in message', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
-      await expect(service.findOne('tenant-a', 'missing-id')).rejects.toThrow('missing-id');
+      await expect(service.findOne('tenant-a', 'missing-id')).rejects.toThrow(
+        'missing-id',
+      );
     });
   });
 
   describe('updateStatus', () => {
     it('new → in_progress: allowed, calls case.update with in_progress status', async () => {
-      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({ status: CaseStatus.new });
-      asMock(mockPrisma._scoped.case.update).mockResolvedValue({ id: 'case-1', status: CaseStatus.in_progress });
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({
+        status: CaseStatus.new,
+      });
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue({
+        id: 'case-1',
+        status: CaseStatus.in_progress,
+      });
 
-      const result = await service.updateStatus('tenant-a', 'case-1', CaseStatus.in_progress);
+      const result = await service.updateStatus(
+        'tenant-a',
+        'case-1',
+        CaseStatus.in_progress,
+      );
 
       expect(mockPrisma._scoped.case.update).toHaveBeenCalledWith(
         expect.objectContaining({ data: { status: CaseStatus.in_progress } }),
@@ -148,10 +172,22 @@ describe('CasesService', () => {
         // Second call: enriched case for n8n payload
         .mockResolvedValueOnce({
           id: 'case-1',
-          familyContacts: [{ email: 'jane@test.com', phone: '555-0100', isPrimaryContact: true }],
-          tenant: { name: 'Sunrise Funeral Home', googleReviewUrl: 'https://g.co/r/sunrise' },
+          familyContacts: [
+            {
+              email: 'jane@test.com',
+              phone: '555-0100',
+              isPrimaryContact: true,
+            },
+          ],
+          tenant: {
+            name: 'Sunrise Funeral Home',
+            googleReviewUrl: 'https://g.co/r/sunrise',
+          },
         });
-      asMock(mockPrisma._scoped.case.update).mockResolvedValue({ id: 'case-1', status: CaseStatus.completed });
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue({
+        id: 'case-1',
+        status: CaseStatus.completed,
+      });
 
       await service.updateStatus('tenant-a', 'case-1', CaseStatus.completed);
 
@@ -167,32 +203,53 @@ describe('CasesService', () => {
     });
 
     it('new → archived: allowed', async () => {
-      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({ status: CaseStatus.new });
-      asMock(mockPrisma._scoped.case.update).mockResolvedValue({ id: 'case-1', status: CaseStatus.archived });
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({
+        status: CaseStatus.new,
+      });
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue({
+        id: 'case-1',
+        status: CaseStatus.archived,
+      });
 
-      await expect(service.updateStatus('tenant-a', 'case-1', CaseStatus.archived)).resolves.toBeDefined();
+      await expect(
+        service.updateStatus('tenant-a', 'case-1', CaseStatus.archived),
+      ).resolves.toBeDefined();
     });
 
     it('in_progress → archived: allowed', async () => {
-      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({ status: CaseStatus.in_progress });
-      asMock(mockPrisma._scoped.case.update).mockResolvedValue({ id: 'case-1', status: CaseStatus.archived });
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({
+        status: CaseStatus.in_progress,
+      });
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue({
+        id: 'case-1',
+        status: CaseStatus.archived,
+      });
 
-      await expect(service.updateStatus('tenant-a', 'case-1', CaseStatus.archived)).resolves.toBeDefined();
+      await expect(
+        service.updateStatus('tenant-a', 'case-1', CaseStatus.archived),
+      ).resolves.toBeDefined();
     });
 
     it('completed → archived: allowed', async () => {
-      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({ status: CaseStatus.completed });
-      asMock(mockPrisma._scoped.case.update).mockResolvedValue({ id: 'case-1', status: CaseStatus.archived });
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({
+        status: CaseStatus.completed,
+      });
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue({
+        id: 'case-1',
+        status: CaseStatus.archived,
+      });
 
-      await expect(service.updateStatus('tenant-a', 'case-1', CaseStatus.archived)).resolves.toBeDefined();
+      await expect(
+        service.updateStatus('tenant-a', 'case-1', CaseStatus.archived),
+      ).resolves.toBeDefined();
     });
 
     it('throws NotFoundException when case not found during transition check', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
-      await expect(service.updateStatus('tenant-a', 'case-1', CaseStatus.in_progress)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.updateStatus('tenant-a', 'case-1', CaseStatus.in_progress),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -208,20 +265,24 @@ describe('CasesService', () => {
     it.each(invalidTransitions)(
       '%s → %s throws BadRequestException',
       async (fromStatus, toStatus) => {
-        asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({ status: fromStatus });
+        asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({
+          status: fromStatus,
+        });
 
-        await expect(service.updateStatus('tenant-a', 'case-1', toStatus)).rejects.toThrow(
-          BadRequestException,
-        );
+        await expect(
+          service.updateStatus('tenant-a', 'case-1', toStatus),
+        ).rejects.toThrow(BadRequestException);
       },
     );
 
     it('throws message containing "Invalid status transition"', async () => {
-      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({ status: CaseStatus.archived });
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue({
+        status: CaseStatus.archived,
+      });
 
-      await expect(service.updateStatus('tenant-a', 'case-1', CaseStatus.new)).rejects.toThrow(
-        /Invalid status transition/,
-      );
+      await expect(
+        service.updateStatus('tenant-a', 'case-1', CaseStatus.new),
+      ).rejects.toThrow(/Invalid status transition/);
     });
   });
 
@@ -229,7 +290,10 @@ describe('CasesService', () => {
     it('sets deletedAt on the case record', async () => {
       const caseData = { id: 'case-1', familyContacts: [], tasks: [] };
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(caseData);
-      asMock(mockPrisma._scoped.case.update).mockResolvedValue({ ...caseData, deletedAt: new Date() });
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue({
+        ...caseData,
+        deletedAt: new Date(),
+      });
 
       await service.softDelete('tenant-a', 'case-1');
 
@@ -244,7 +308,9 @@ describe('CasesService', () => {
     it('throws NotFoundException if case does not exist', async () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
-      await expect(service.softDelete('tenant-a', 'missing-id')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.softDelete('tenant-a', 'missing-id'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

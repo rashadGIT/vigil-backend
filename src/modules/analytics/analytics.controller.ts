@@ -1,8 +1,16 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { ComputeSnapshotDto, GetSnapshotDto } from './dto/analytics.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 import { InternalOnly } from '../../common/decorators/internal-only.decorator';
 
 @ApiTags('analytics')
@@ -12,8 +20,13 @@ export class AnalyticsController {
 
   @Get('staff-workload')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get active case and overdue task counts per staff member' })
-  @ApiResponse({ status: 200, description: 'Returns workload summary per user' })
+  @ApiOperation({
+    summary: 'Get active case and overdue task counts per staff member',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns workload summary per user',
+  })
   getStaffWorkload(@CurrentUser() user: AuthUser) {
     return this.analyticsService.getStaffWorkload(user.tenantId);
   }
@@ -21,10 +34,18 @@ export class AnalyticsController {
   @Get('snapshot')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get analytics snapshots for the current tenant' })
-  @ApiResponse({ status: 200, description: 'Returns matching analytics snapshots' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns matching analytics snapshots',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getSnapshot(@CurrentUser() user: AuthUser, @Query() query: GetSnapshotDto) {
-    return this.analyticsService.getSnapshot(user.tenantId, query.period, query.from, query.to);
+    return this.analyticsService.getSnapshot(
+      user.tenantId,
+      query.period,
+      query.from,
+      query.to,
+    );
   }
 
   @Post('snapshot')
@@ -33,6 +54,10 @@ export class AnalyticsController {
   @ApiResponse({ status: 201, description: 'Snapshot computed and saved' })
   @ApiResponse({ status: 401, description: 'Invalid internal key' })
   computeSnapshot(@Body() dto: ComputeSnapshotDto) {
-    return this.analyticsService.computeAndSave(dto.tenantId, dto.period, dto.periodStart);
+    return this.analyticsService.computeAndSave(
+      dto.tenantId,
+      dto.period,
+      dto.periodStart,
+    );
   }
 }

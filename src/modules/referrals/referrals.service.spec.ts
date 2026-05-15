@@ -8,12 +8,19 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { createMockPrisma } from '../../__mocks__/prisma.mock';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asMock(fn: any): jest.Mock { return fn as jest.Mock; }
+function asMock(fn: any): jest.Mock {
+  return fn as jest.Mock;
+}
 
 describe('ReferralsService', () => {
   let service: ReferralsService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
-  let scopedReferralSource: { create: jest.Mock; findMany: jest.Mock; findFirst: jest.Mock; delete: jest.Mock };
+  let scopedReferralSource: {
+    create: jest.Mock;
+    findMany: jest.Mock;
+    findFirst: jest.Mock;
+    delete: jest.Mock;
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -40,7 +47,12 @@ describe('ReferralsService', () => {
   describe('create', () => {
     it('calls forTenant and referralSource.create with correct data', async () => {
       const dto = { source: 'google', notes: 'Found online' } as any;
-      const expected = { id: 'ref-1', caseId: 'case-1', tenantId: 'tenant-a', ...dto };
+      const expected = {
+        id: 'ref-1',
+        caseId: 'case-1',
+        tenantId: 'tenant-a',
+        ...dto,
+      };
       scopedReferralSource.create.mockResolvedValue(expected);
 
       const result = await service.create('tenant-a', 'case-1', dto);
@@ -48,7 +60,11 @@ describe('ReferralsService', () => {
       expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-a');
       expect(scopedReferralSource.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ tenantId: 'tenant-a', caseId: 'case-1', source: 'google' }),
+          data: expect.objectContaining({
+            tenantId: 'tenant-a',
+            caseId: 'case-1',
+            source: 'google',
+          }),
         }),
       );
       expect(result).toEqual(expected);
@@ -78,7 +94,10 @@ describe('ReferralsService', () => {
     });
 
     it('returns the list of referral sources', async () => {
-      const referrals = [{ id: 'ref-1', source: 'google' }, { id: 'ref-2', source: 'word_of_mouth' }];
+      const referrals = [
+        { id: 'ref-1', source: 'google' },
+        { id: 'ref-2', source: 'word_of_mouth' },
+      ];
       scopedReferralSource.findMany.mockResolvedValue(referrals);
 
       const result = await service.findByCase('tenant-a', 'case-1');
@@ -103,13 +122,17 @@ describe('ReferralsService', () => {
     it('throws NotFoundException when referral does not exist', async () => {
       scopedReferralSource.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove('tenant-a', 'missing')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('tenant-a', 'missing')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException with referral id in message', async () => {
       scopedReferralSource.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove('tenant-a', 'ref-99')).rejects.toThrow('ref-99');
+      await expect(service.remove('tenant-a', 'ref-99')).rejects.toThrow(
+        'ref-99',
+      );
     });
   });
 });

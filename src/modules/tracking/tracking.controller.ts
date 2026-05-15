@@ -1,8 +1,16 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { TrackingService } from './tracking.service';
 import { TrackingDto } from './dto/tracking.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('tracking')
 @ApiBearerAuth()
@@ -11,7 +19,9 @@ export class TrackingController {
   constructor(private readonly trackingService: TrackingService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create or update decedent tracking record for a case' })
+  @ApiOperation({
+    summary: 'Create or update decedent tracking record for a case',
+  })
   @ApiResponse({ status: 201, description: 'Tracking record created' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   upsertPost(

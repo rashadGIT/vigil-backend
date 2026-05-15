@@ -47,8 +47,18 @@ export class AuthController {
   @ApiOperation({ summary: 'Get the currently authenticated user' })
   @ApiResponse({ status: 200, description: 'Returns user profile' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  me(@Req() request: Request): { id: string; email: string; name: string; role: string; tenantId: string } {
-    const user = (request as Request & { user: { sub: string; email: string; tenantId: string; role: string } }).user;
+  me(@Req() request: Request): {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    tenantId: string;
+  } {
+    const user = (
+      request as Request & {
+        user: { sub: string; email: string; tenantId: string; role: string };
+      }
+    ).user;
     return {
       id: user.sub,
       email: user.email,

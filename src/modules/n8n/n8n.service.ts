@@ -35,7 +35,10 @@ export class N8nService implements OnModuleInit {
     }
   }
 
-  async trigger(event: N8nEvent, payload: Record<string, unknown>): Promise<void> {
+  async trigger(
+    event: N8nEvent,
+    payload: Record<string, unknown>,
+  ): Promise<void> {
     const envVar = EVENT_TO_ENV_VAR[event];
     const webhookUrl = this.configService.get<string>(envVar);
     if (!webhookUrl || webhookUrl.includes('PLACEHOLDER')) {
@@ -53,11 +56,16 @@ export class N8nService implements OnModuleInit {
       this.logger.debug(`Triggered n8n event ${event}`);
     } catch (err) {
       // Fail open — log the error but never crash the caller
-      this.logger.error(`Failed to trigger n8n event ${event}: ${(err as Error).message}`);
+      this.logger.error(
+        `Failed to trigger n8n event ${event}: ${(err as Error).message}`,
+      );
     }
   }
 
-  async handleCallback(event: string, payload: Record<string, unknown>): Promise<void> {
+  async handleCallback(
+    event: string,
+    payload: Record<string, unknown>,
+  ): Promise<void> {
     this.logger.log(`n8n callback: event=${event}`);
 
     switch (event) {

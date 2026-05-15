@@ -1,8 +1,20 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { MemorialService } from './memorial.service';
-import { CreateMemorialDto, GuestbookEntryDto, UpdateMemorialDto } from './dto/memorial.dto';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CreateMemorialDto,
+  GuestbookEntryDto,
+  UpdateMemorialDto,
+} from './dto/memorial.dto';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('memorial')
@@ -14,7 +26,10 @@ export class MemorialController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a memorial page for a case' })
   @ApiResponse({ status: 201, description: 'Memorial page created' })
-  @ApiResponse({ status: 409, description: 'Memorial page already exists for this case' })
+  @ApiResponse({
+    status: 409,
+    description: 'Memorial page already exists for this case',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(
     @CurrentUser() user: AuthUser,
@@ -49,10 +64,15 @@ export class MemorialController {
 
   @Post('memorial/:slug/guestbook')
   @Public()
-  @ApiOperation({ summary: 'Add a guestbook entry to a memorial page (public)' })
+  @ApiOperation({
+    summary: 'Add a guestbook entry to a memorial page (public)',
+  })
   @ApiResponse({ status: 201, description: 'Guestbook entry added' })
   @ApiResponse({ status: 404, description: 'Page not found or not published' })
-  addGuestbookEntry(@Param('slug') slug: string, @Body() dto: GuestbookEntryDto) {
+  addGuestbookEntry(
+    @Param('slug') slug: string,
+    @Body() dto: GuestbookEntryDto,
+  ) {
     return this.memorialService.addGuestbookEntry(slug, dto);
   }
 }

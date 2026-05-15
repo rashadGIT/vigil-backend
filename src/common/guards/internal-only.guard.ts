@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { IS_INTERNAL_KEY } from '../decorators/internal-only.decorator';
@@ -11,10 +16,10 @@ export class InternalOnlyGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const isInternal = this.reflector.getAllAndOverride<boolean>(IS_INTERNAL_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const isInternal = this.reflector.getAllAndOverride<boolean>(
+      IS_INTERNAL_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (!isInternal) return true; // Not an @InternalOnly() route — let other guards handle
 
     const request = context.switchToHttp().getRequest();

@@ -17,7 +17,10 @@ export class IntakeService {
     private readonly taskTemplates: TaskTemplatesService,
   ) {}
 
-  async submit(tenantSlug: string, dto: IntakeFormDto): Promise<{ caseId: string; familyAccessToken: string }> {
+  async submit(
+    tenantSlug: string,
+    dto: IntakeFormDto,
+  ): Promise<{ caseId: string; familyAccessToken: string }> {
     const tenant = await this.prisma.tenant.findUnique({
       where: { slug: tenantSlug },
       select: { id: true, active: true },
@@ -39,7 +42,9 @@ export class IntakeService {
           veteranStatus: dto.veteranStatus ?? false,
           placeOfDeath: dto.placeOfDeath ?? null,
           causeOfDeath: dto.causeOfDeath ?? null,
-          financialAckAt: dto.financialResponsibilityAcknowledgment ? new Date() : null,
+          financialAckAt: dto.financialResponsibilityAcknowledgment
+            ? new Date()
+            : null,
           howHeard: dto.howDidYouHearAboutUs ?? null,
         },
       });
@@ -57,7 +62,8 @@ export class IntakeService {
           city: dto.primaryContact.city ?? null,
           state: dto.primaryContact.state ?? null,
           zip: dto.primaryContact.zip ?? null,
-          isFinanciallyResponsible: dto.primaryContact.isFinanciallyResponsible ?? true,
+          isFinanciallyResponsible:
+            dto.primaryContact.isFinanciallyResponsible ?? true,
           isPrimaryContact: true,
         },
       });
@@ -76,14 +82,19 @@ export class IntakeService {
             city: dto.secondaryContact.city ?? null,
             state: dto.secondaryContact.state ?? null,
             zip: dto.secondaryContact.zip ?? null,
-            isFinanciallyResponsible: dto.secondaryContact.isFinanciallyResponsible ?? false,
+            isFinanciallyResponsible:
+              dto.secondaryContact.isFinanciallyResponsible ?? false,
             isPrimaryContact: false,
           },
         });
       }
 
       // 4. Bulk-create Tasks from service-type template
-      const templateTasks = this.taskTemplates.buildTasksForCase(tenantId, createdCase.id, dto.serviceType);
+      const templateTasks = this.taskTemplates.buildTasksForCase(
+        tenantId,
+        createdCase.id,
+        dto.serviceType,
+      );
       await tx.task.createMany({ data: templateTasks });
 
       // 5. CalendarEvent placeholder
@@ -115,7 +126,9 @@ export class IntakeService {
       return { caseId: createdCase.id, familyAccessToken };
     });
 
-    this.logger.log(`[INTAKE] Submitted for tenant=${tenantId} case=${result.caseId}`);
+    this.logger.log(
+      `[INTAKE] Submitted for tenant=${tenantId} case=${result.caseId}`,
+    );
     void this.n8n.trigger(N8nEvent.INTAKE_NOTIFY, {
       tenantId,
       caseId: result.caseId,

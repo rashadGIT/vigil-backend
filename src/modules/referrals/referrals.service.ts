@@ -20,8 +20,12 @@ export class ReferralsService {
   }
 
   async remove(tenantId: string, id: string) {
-    const existing = await this.prisma.forTenant(tenantId).referralSource.findFirst({ where: { id } });
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .referralSource.findFirst({ where: { id } });
     if (!existing) throw new NotFoundException(`Referral ${id} not found`);
-    return this.prisma.forTenant(tenantId).referralSource.delete({ where: { id } });
+    return this.prisma
+      .forTenant(tenantId)
+      .referralSource.delete({ where: { id } });
   }
 }

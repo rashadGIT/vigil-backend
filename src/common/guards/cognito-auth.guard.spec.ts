@@ -55,12 +55,16 @@ describe('CognitoAuthGuard', () => {
 
   describe('DEV_AUTH_BYPASS path', () => {
     it('returns true when x-dev-user header is present and valid', async () => {
-      const ctx = makeContext({ 'x-dev-user': 'sub-1|tenant-a|admin|admin@test.com' });
+      const ctx = makeContext({
+        'x-dev-user': 'sub-1|tenant-a|admin|admin@test.com',
+      });
       await expect(guard.canActivate(ctx)).resolves.toBe(true);
     });
 
     it('sets req.user from x-dev-user header parts', async () => {
-      const ctx = makeContext({ 'x-dev-user': 'sub-1|tenant-a|admin|admin@test.com' });
+      const ctx = makeContext({
+        'x-dev-user': 'sub-1|tenant-a|admin|admin@test.com',
+      });
       await guard.canActivate(ctx);
       const req = ctx.switchToHttp().getRequest();
       expect(req.user).toMatchObject({
@@ -83,14 +87,16 @@ describe('CognitoAuthGuard', () => {
     it('throws UnauthorizedException for malformed x-dev-user header (missing parts)', async () => {
       // A header with fewer than 4 pipe-separated parts causes falsy sub/tenantId/role/email
       const ctx = makeContext({ 'x-dev-user': 'only-one-part' });
-      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('does not call Cognito verifier in bypass mode', async () => {
-      const { CognitoJwtVerifier } = jest.requireMock('aws-jwt-verify') as {
-        CognitoJwtVerifier: { create: jest.Mock };
-      };
-      const ctx = makeContext({ 'x-dev-user': 'sub-1|tenant-a|admin|admin@test.com' });
+      const { CognitoJwtVerifier } = jest.requireMock('aws-jwt-verify');
+      const ctx = makeContext({
+        'x-dev-user': 'sub-1|tenant-a|admin|admin@test.com',
+      });
       await guard.canActivate(ctx);
       expect(CognitoJwtVerifier.create).not.toHaveBeenCalled();
     });
@@ -99,9 +105,13 @@ describe('CognitoAuthGuard', () => {
   describe('bypass disabled in production', () => {
     it('falls through to JWT path when NODE_ENV=production', async () => {
       process.env.NODE_ENV = 'production';
-      const ctx = makeContext({ 'x-dev-user': 'sub-1|tenant-a|admin|admin@test.com' });
+      const ctx = makeContext({
+        'x-dev-user': 'sub-1|tenant-a|admin|admin@test.com',
+      });
       // No Bearer token provided — should throw "Missing Bearer token"
-      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 

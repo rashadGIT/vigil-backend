@@ -68,7 +68,9 @@ export class PreneedService {
       throw new BadRequestException(`Arrangement ${id} is already converted`);
     }
     if (arrangement.status === 'cancelled') {
-      throw new BadRequestException(`Arrangement ${id} is cancelled and cannot be converted`);
+      throw new BadRequestException(
+        `Arrangement ${id} is cancelled and cannot be converted`,
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {

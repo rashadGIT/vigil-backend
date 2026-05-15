@@ -6,7 +6,10 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { ObituariesService } from './obituaries.service';
-import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../../common/decorators/current-user.decorator';
 
 @ApiTags('obituaries')
 @ApiBearerAuth()
@@ -41,6 +44,11 @@ export class ObituariesController {
     @Param('caseId') caseId: string,
     @Body() body: { draftText: string; status?: string },
   ) {
-    return this.service.update(user.tenantId, caseId, body.draftText, body.status);
+    return this.service.update(
+      user.tenantId,
+      caseId,
+      body.draftText,
+      body.status,
+    );
   }
 }

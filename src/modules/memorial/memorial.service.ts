@@ -1,6 +1,14 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { CreateMemorialDto, GuestbookEntryDto, UpdateMemorialDto } from './dto/memorial.dto';
+import {
+  CreateMemorialDto,
+  GuestbookEntryDto,
+  UpdateMemorialDto,
+} from './dto/memorial.dto';
 
 @Injectable()
 export class MemorialService {
@@ -28,9 +36,13 @@ export class MemorialService {
       });
     } catch (err: unknown) {
       const isUniqueViolation =
-        err instanceof Error && 'code' in err && (err as { code: string }).code === 'P2002';
+        err instanceof Error &&
+        'code' in err &&
+        (err as { code: string }).code === 'P2002';
       if (isUniqueViolation) {
-        throw new ConflictException(`Memorial page already exists for case ${caseId}`);
+        throw new ConflictException(
+          `Memorial page already exists for case ${caseId}`,
+        );
       }
       throw err;
     }
@@ -45,7 +57,9 @@ export class MemorialService {
   }
 
   async update(tenantId: string, id: string, dto: UpdateMemorialDto) {
-    const existing = await this.prisma.forTenant(tenantId).memorialPage.findFirst({ where: { id } });
+    const existing = await this.prisma
+      .forTenant(tenantId)
+      .memorialPage.findFirst({ where: { id } });
     if (!existing) throw new NotFoundException(`Memorial page ${id} not found`);
     return this.prisma.forTenant(tenantId).memorialPage.update({
       where: { id },
@@ -58,7 +72,9 @@ export class MemorialService {
     if (!page) throw new NotFoundException(`Memorial page not found`);
     if (!page.published) throw new NotFoundException(`Memorial page not found`);
 
-    const existing = Array.isArray(page.guestbookEntries) ? page.guestbookEntries : [];
+    const existing = Array.isArray(page.guestbookEntries)
+      ? page.guestbookEntries
+      : [];
     const newEntry = { ...entry, createdAt: new Date().toISOString() };
 
     return this.prisma.forTenant(page.tenantId).memorialPage.update({

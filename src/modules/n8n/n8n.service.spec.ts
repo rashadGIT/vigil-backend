@@ -28,7 +28,9 @@ describe('N8nService', () => {
 
   describe('trigger — PLACEHOLDER detection', () => {
     it('does NOT call httpService.post when url contains PLACEHOLDER', async () => {
-      mockConfig.get.mockReturnValue('https://PLACEHOLDER.n8n.cloud/webhook/abc');
+      mockConfig.get.mockReturnValue(
+        'https://PLACEHOLDER.n8n.cloud/webhook/abc',
+      );
 
       await service.trigger(N8nEvent.INTAKE_NOTIFY, { test: true });
 
@@ -52,17 +54,23 @@ describe('N8nService', () => {
     });
 
     it('resolves without throwing when url is PLACEHOLDER', async () => {
-      mockConfig.get.mockReturnValue('https://PLACEHOLDER.n8n.cloud/webhook/abc');
+      mockConfig.get.mockReturnValue(
+        'https://PLACEHOLDER.n8n.cloud/webhook/abc',
+      );
 
-      await expect(service.trigger(N8nEvent.INTAKE_NOTIFY, {})).resolves.toBeUndefined();
+      await expect(
+        service.trigger(N8nEvent.INTAKE_NOTIFY, {}),
+      ).resolves.toBeUndefined();
     });
   });
 
   describe('trigger — real URL fires HTTP POST', () => {
     beforeEach(() => {
       mockConfig.get.mockImplementation((key: string) => {
-        if (key === 'N8N_WEBHOOK_INTAKE_NOTIFY') return 'https://rashadbarnett.app.n8n.cloud/webhook/intake';
-        if (key === 'N8N_WEBHOOK_GRIEF_FOLLOWUP') return 'https://rashadbarnett.app.n8n.cloud/webhook/grief';
+        if (key === 'N8N_WEBHOOK_INTAKE_NOTIFY')
+          return 'https://rashadbarnett.app.n8n.cloud/webhook/intake';
+        if (key === 'N8N_WEBHOOK_GRIEF_FOLLOWUP')
+          return 'https://rashadbarnett.app.n8n.cloud/webhook/grief';
         if (key === 'N8N_WEBHOOK_KEY') return 'test-secret-key';
         return undefined;
       });
@@ -77,7 +85,9 @@ describe('N8nService', () => {
         'https://rashadbarnett.app.n8n.cloud/webhook/intake',
         payload,
         expect.objectContaining({
-          headers: expect.objectContaining({ 'x-vigil-key': 'test-secret-key' }),
+          headers: expect.objectContaining({
+            'x-vigil-key': 'test-secret-key',
+          }),
         }),
       );
     });
@@ -93,27 +103,36 @@ describe('N8nService', () => {
     });
 
     it('resolves successfully when HTTP call succeeds', async () => {
-      await expect(service.trigger(N8nEvent.INTAKE_NOTIFY, {})).resolves.toBeUndefined();
+      await expect(
+        service.trigger(N8nEvent.INTAKE_NOTIFY, {}),
+      ).resolves.toBeUndefined();
     });
   });
 
   describe('trigger — error swallowing (fire-and-forget)', () => {
     beforeEach(() => {
       mockConfig.get.mockImplementation((key: string) => {
-        if (key === 'N8N_WEBHOOK_INTAKE_NOTIFY') return 'https://rashadbarnett.app.n8n.cloud/webhook/intake';
+        if (key === 'N8N_WEBHOOK_INTAKE_NOTIFY')
+          return 'https://rashadbarnett.app.n8n.cloud/webhook/intake';
         if (key === 'N8N_WEBHOOK_KEY') return 'secret';
         return undefined;
       });
     });
 
     it('swallows HTTP error and resolves to undefined', async () => {
-      mockHttp.post.mockReturnValue(throwError(() => new Error('Network error')));
+      mockHttp.post.mockReturnValue(
+        throwError(() => new Error('Network error')),
+      );
 
-      await expect(service.trigger(N8nEvent.INTAKE_NOTIFY, {})).resolves.toBeUndefined();
+      await expect(
+        service.trigger(N8nEvent.INTAKE_NOTIFY, {}),
+      ).resolves.toBeUndefined();
     });
 
     it('does not re-throw when HTTP POST fails', async () => {
-      mockHttp.post.mockReturnValue(throwError(() => new Error('Connection refused')));
+      mockHttp.post.mockReturnValue(
+        throwError(() => new Error('Connection refused')),
+      );
 
       const result = service.trigger(N8nEvent.INTAKE_NOTIFY, {});
       await expect(result).resolves.not.toThrow();
@@ -125,7 +144,8 @@ describe('N8nService', () => {
       const calls: string[] = [];
       mockConfig.get.mockImplementation((key: string) => {
         calls.push(key);
-        if (key === 'N8N_WEBHOOK_GRIEF_FOLLOWUP') return 'https://example.com/grief';
+        if (key === 'N8N_WEBHOOK_GRIEF_FOLLOWUP')
+          return 'https://example.com/grief';
         if (key === 'N8N_WEBHOOK_KEY') return 'key';
         return undefined;
       });
@@ -139,7 +159,8 @@ describe('N8nService', () => {
       const calls: string[] = [];
       mockConfig.get.mockImplementation((key: string) => {
         calls.push(key);
-        if (key === 'N8N_WEBHOOK_REVIEW_REQUEST') return 'https://example.com/review';
+        if (key === 'N8N_WEBHOOK_REVIEW_REQUEST')
+          return 'https://example.com/review';
         if (key === 'N8N_WEBHOOK_KEY') return 'key';
         return undefined;
       });

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CaseStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { N8nService } from '../n8n/n8n.service';
@@ -50,11 +54,31 @@ export class CasesService {
       overdueTasks,
       pendingSignatures,
     ] = await Promise.all([
-      db.case.count({ where: { deletedAt: null, status: { in: ['new', 'in_progress'] } } }),
-      db.case.count({ where: { deletedAt: null, status: { in: ['new', 'in_progress'] }, createdAt: { lte: yesterday } } }),
-      db.case.count({ where: { deletedAt: null, createdAt: { gte: startOfMonth } } }),
-      db.case.count({ where: { deletedAt: null, createdAt: { gte: startOfLastMonth, lt: startOfMonth } } }),
-      db.case.count({ where: { deletedAt: null, tasks: { some: { completed: false, dueDate: { lt: now } } } } }),
+      db.case.count({
+        where: { deletedAt: null, status: { in: ['new', 'in_progress'] } },
+      }),
+      db.case.count({
+        where: {
+          deletedAt: null,
+          status: { in: ['new', 'in_progress'] },
+          createdAt: { lte: yesterday },
+        },
+      }),
+      db.case.count({
+        where: { deletedAt: null, createdAt: { gte: startOfMonth } },
+      }),
+      db.case.count({
+        where: {
+          deletedAt: null,
+          createdAt: { gte: startOfLastMonth, lt: startOfMonth },
+        },
+      }),
+      db.case.count({
+        where: {
+          deletedAt: null,
+          tasks: { some: { completed: false, dueDate: { lt: now } } },
+        },
+      }),
       db.signature.count({ where: { signedAt: null } }),
     ]);
 
@@ -220,7 +244,9 @@ export class CasesService {
    * Cross-tenant overdue task summary for daily digest email.
    * Called by n8n Workflow 2 CRON path via @InternalOnly() guard.
    */
-  async getOverdueTaskSummary(): Promise<Array<{ tenantId: string; overdueCount: number; caseIds: string[] }>> {
+  async getOverdueTaskSummary(): Promise<
+    Array<{ tenantId: string; overdueCount: number; caseIds: string[] }>
+  > {
     const now = new Date();
     const overdueTasks = await this.prisma.task.findMany({
       where: {
@@ -251,7 +277,10 @@ export class CasesService {
     const scoped = this.prisma.forTenant(tenantId);
     const fromDate = new Date(from);
     const toDate = new Date(to);
-    const dateWhere = { createdAt: { gte: fromDate, lte: toDate }, deletedAt: null };
+    const dateWhere = {
+      createdAt: { gte: fromDate, lte: toDate },
+      deletedAt: null,
+    };
 
     const [cases, paymentAgg, byServiceType, pendingAgg] = await Promise.all([
       scoped.case.findMany({
@@ -264,7 +293,9 @@ export class CasesService {
         },
       }),
       scoped.payment.aggregate({
-        where: { case: { createdAt: { gte: fromDate, lte: toDate }, deletedAt: null } },
+        where: {
+          case: { createdAt: { gte: fromDate, lte: toDate }, deletedAt: null },
+        },
         _sum: { amountPaid: true },
       }),
       scoped.case.groupBy({
@@ -273,7 +304,9 @@ export class CasesService {
         _count: { id: true },
       }),
       scoped.payment.aggregate({
-        where: { case: { createdAt: { gte: fromDate, lte: toDate }, deletedAt: null } },
+        where: {
+          case: { createdAt: { gte: fromDate, lte: toDate }, deletedAt: null },
+        },
         _sum: { totalAmount: true, amountPaid: true },
       }),
     ]);
@@ -282,13 +315,17 @@ export class CasesService {
     const totalCases = cases.length;
     const averageCaseValue = totalCases > 0 ? totalRevenue / totalCases : 0;
     const pendingBalance =
-      Number(pendingAgg._sum.totalAmount ?? 0) - Number(pendingAgg._sum.amountPaid ?? 0);
+      Number(pendingAgg._sum.totalAmount ?? 0) -
+      Number(pendingAgg._sum.amountPaid ?? 0);
 
     // Revenue per serviceType
     const revenueMap = new Map<string, number>();
     for (const c of cases) {
       const paid = Number(c.payment?.amountPaid ?? 0);
-      revenueMap.set(c.serviceType, (revenueMap.get(c.serviceType) ?? 0) + paid);
+      revenueMap.set(
+        c.serviceType,
+        (revenueMap.get(c.serviceType) ?? 0) + paid,
+      );
     }
     const revenueByServiceType = byServiceType.map((row) => ({
       serviceType: row.serviceType,
@@ -302,7 +339,10 @@ export class CasesService {
       const month = c.createdAt.toISOString().slice(0, 7); // "YYYY-MM"
       const paid = Number(c.payment?.amountPaid ?? 0);
       const existing = monthMap.get(month) ?? { count: 0, revenue: 0 };
-      monthMap.set(month, { count: existing.count + 1, revenue: existing.revenue + paid });
+      monthMap.set(month, {
+        count: existing.count + 1,
+        revenue: existing.revenue + paid,
+      });
     }
     const casesByMonth = Array.from(monthMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))

@@ -29,10 +29,14 @@ export class AuditLogInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(async (responseBody: unknown) => {
-        const user = request.user as { sub?: string; tenantId?: string } | undefined;
+        const user = request.user as
+          | { sub?: string; tenantId?: string }
+          | undefined;
         if (!user?.sub || !user.tenantId) return;
 
-        const entityType = this.deriveEntityType(request.route?.path ?? request.url);
+        const entityType = this.deriveEntityType(
+          request.route?.path ?? request.url,
+        );
         const entityId =
           (responseBody as { id?: string } | null)?.id ??
           (request.params?.id as string | undefined) ??
@@ -50,7 +54,9 @@ export class AuditLogInterceptor implements NestInterceptor {
             },
           });
         } catch (err) {
-          this.logger.warn(`Failed to write AuditLog: ${(err as Error).message}`);
+          this.logger.warn(
+            `Failed to write AuditLog: ${(err as Error).message}`,
+          );
         }
       }),
     );
