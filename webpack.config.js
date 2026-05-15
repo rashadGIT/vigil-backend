@@ -1,6 +1,12 @@
+const nodeExternals = require('webpack-node-externals');
+
 module.exports = (options, webpack) => ({
   ...options,
-  externals: [],
+  externals: [
+    nodeExternals({
+      allowlist: [/@prisma\/client/, /prisma/],
+    }),
+  ],
   plugins: [
     ...options.plugins,
     // Suppress dynamic-require warnings for optional NestJS peer deps not used in this app
