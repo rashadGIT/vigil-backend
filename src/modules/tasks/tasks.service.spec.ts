@@ -154,7 +154,7 @@ describe('TasksService', () => {
       asMock(mockPrisma._scoped.task.findFirst).mockResolvedValue(null);
 
       await expect(
-        service.update('tenant-a', 'missing', {} as any, 'user-1'),
+        service.update('tenant-a', 'missing', {}, 'user-1'),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -162,7 +162,7 @@ describe('TasksService', () => {
       asMock(mockPrisma._scoped.task.findFirst).mockResolvedValue(null);
 
       await expect(
-        service.update('tenant-a', 'task-99', {} as any, 'user-1'),
+        service.update('tenant-a', 'task-99', {}, 'user-1'),
       ).rejects.toThrow('task-99');
     });
   });

@@ -46,8 +46,7 @@ jobs:
       - run: npx prisma generate
       - run: npx nest build
       - run: npx prisma migrate deploy
-      - run: npm prune --omit=dev
-      - run: zip -r /tmp/vigil-api.zip dist/ node_modules/ prisma/
+      - run: zip -r /tmp/vigil-api.zip dist/ node_modules/.prisma/ prisma/
 
       - name: Upload zip to S3
         run: |

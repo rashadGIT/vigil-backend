@@ -121,7 +121,7 @@ describe('ContactsService', () => {
       scopedContact.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.update('tenant-a', 'missing-id', {} as any),
+        service.update('tenant-a', 'missing-id', {}),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -129,7 +129,7 @@ describe('ContactsService', () => {
       scopedContact.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.update('tenant-a', 'contact-99', {} as any),
+        service.update('tenant-a', 'contact-99', {}),
       ).rejects.toThrow('contact-99');
     });
   });
