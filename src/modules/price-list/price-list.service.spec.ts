@@ -174,4 +174,33 @@ describe('PriceListService', () => {
       expect(result).toHaveProperty('s3Key');
     });
   });
+
+  describe('logGplView', () => {
+    it('creates an audit log entry', async () => {
+      scopedAuditLog.create.mockResolvedValue({});
+
+      await service.logGplView('tenant-a', 'user-1');
+
+      expect(scopedAuditLog.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ action: 'gpl_view', userId: 'user-1' }),
+        }),
+      );
+    });
+  });
+
+  describe('getGplAuditLog', () => {
+    it('returns audit log entries for gpl_view and gpl_sent', async () => {
+      const entries = [{ id: 'log-1', action: 'gpl_view' }];
+      (mockPrisma._scoped as any).auditLog = {
+        ...scopedAuditLog,
+        findMany: jest.fn().mockResolvedValue(entries),
+      };
+      (mockPrisma.forTenant as jest.Mock).mockReturnValue(mockPrisma._scoped);
+
+      const result = await service.getGplAuditLog('tenant-a');
+
+      expect(result).toEqual(entries);
+    });
+  });
 });

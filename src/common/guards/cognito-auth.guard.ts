@@ -120,9 +120,11 @@ export class CognitoAuthGuard implements CanActivate {
         throw new UnauthorizedException('User not provisioned');
       }
 
+      // Super admins can override tenant via x-tenant-id header.
+      // If not provided, fall back to their own tenantId so dashboard works without impersonation.
       const effectiveTenantId =
         dbUser.role === 'super_admin'
-          ? ((request.headers['x-tenant-id'] as string | undefined) ?? '')
+          ? ((request.headers['x-tenant-id'] as string | undefined) ?? dbUser.tenantId ?? '')
           : dbUser.tenantId;
 
       request.user = {

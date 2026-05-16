@@ -225,4 +225,28 @@ describe('MemorialService', () => {
       expect(callData.guestbookEntries[0]).toHaveProperty('createdAt');
     });
   });
+
+  describe('update', () => {
+    it('updates memorial page when it exists', async () => {
+      const existing = { id: 'mem-1' };
+      const updated = { id: 'mem-1', content: 'updated' };
+      scopedMemorialPage.findFirst.mockResolvedValue(existing);
+      scopedMemorialPage.update.mockResolvedValue(updated);
+
+      const result = await service.update('tenant-a', 'mem-1', { content: 'updated' } as any);
+
+      expect(result).toEqual(updated);
+      expect(scopedMemorialPage.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'mem-1' } }),
+      );
+    });
+
+    it('throws NotFoundException when memorial page does not exist', async () => {
+      scopedMemorialPage.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.update('tenant-a', 'missing', {} as any),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 });

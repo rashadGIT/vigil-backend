@@ -249,4 +249,20 @@ describe('FollowUpsService', () => {
       expect(result).toEqual({ updatedCount: 0 });
     });
   });
+
+  describe('markSent', () => {
+    it('calls followUp.updateMany with status sent filter', async () => {
+      const bareFollowUpUpdateMany = jest.fn().mockResolvedValue({ count: 1 });
+      (mockPrisma as any).followUp = { updateMany: bareFollowUpUpdateMany };
+
+      await service.markSent('follow-up-1');
+
+      expect(bareFollowUpUpdateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'follow-up-1', status: 'pending' },
+          data: expect.objectContaining({ status: 'sent' }),
+        }),
+      );
+    });
+  });
 });

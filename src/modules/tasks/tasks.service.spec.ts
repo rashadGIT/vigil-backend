@@ -188,4 +188,20 @@ describe('TasksService', () => {
       );
     });
   });
+
+  describe('findOverdue', () => {
+    it('queries incomplete tasks with past dueDate', async () => {
+      const tasks = [{ id: 't1', dueDate: new Date('2024-01-01') }];
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue(tasks);
+
+      const result = await service.findOverdue('tenant-a');
+
+      expect(result).toEqual(tasks);
+      expect(mockPrisma._scoped.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ completed: false }),
+        }),
+      );
+    });
+  });
 });

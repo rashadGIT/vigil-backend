@@ -114,6 +114,77 @@ describe('CasesService', () => {
         }),
       );
     });
+
+    it('passes assignedToId filter to findMany where clause', async () => {
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', { assignedToId: 'user-1' });
+
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ assignedToId: 'user-1' }),
+        }),
+      );
+    });
+
+    it('dashboardFilter overdue: queries tasks and injects id filter', async () => {
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue([
+        { caseId: 'c1' },
+        { caseId: 'c2' },
+      ]);
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', { dashboardFilter: 'overdue' });
+
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ id: { in: ['c1', 'c2'] } }),
+        }),
+      );
+    });
+
+    it('dashboardFilter pending-signatures: queries signatures and injects id filter', async () => {
+      asMock(mockPrisma._scoped.signature.findMany).mockResolvedValue([
+        { caseId: 's1' },
+      ]);
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', { dashboardFilter: 'pending-signatures' });
+
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ id: { in: ['s1'] } }),
+        }),
+      );
+    });
+
+    it('dashboardFilter this-month: injects createdAt gte filter', async () => {
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', { dashboardFilter: 'this-month' });
+
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: expect.objectContaining({ gte: expect.any(Date) }),
+          }),
+        }),
+      );
+    });
+
+    it('dashboardFilter active: injects status in-progress/new filter', async () => {
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', { dashboardFilter: 'active' });
+
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { in: ['new', 'in_progress'] },
+          }),
+        }),
+      );
+    });
   });
 
   describe('getStats', () => {
@@ -193,6 +264,30 @@ describe('CasesService', () => {
       await expect(service.findOne('tenant-a', 'missing-id')).rejects.toThrow(
         'missing-id',
       );
+    });
+  });
+
+  describe('update', () => {
+    it('updates case fields without status', async () => {
+      const existing = { id: 'case-1', status: 'new', familyContacts: [], tasks: [] };
+      const updated = { id: 'case-1', deceasedName: 'Jane Doe' };
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(existing);
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue(updated);
+
+      const result = await service.update('tenant-a', 'case-1', { deceasedName: 'Jane Doe' } as any);
+
+      expect(result).toEqual(updated);
+      expect(mockPrisma._scoped.case.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'case-1' } }),
+      );
+    });
+
+    it('throws NotFoundException when case does not exist', async () => {
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
+
+      await expect(
+        service.update('tenant-a', 'missing', { deceasedName: 'X' } as any),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -391,6 +486,306 @@ describe('CasesService', () => {
       const result = await service.hardDeleteExpiredCases();
 
       expect(result).toEqual({ deletedCount: 0 });
+    });
+  });
+
+  describe('findAll with dashboardFilter', () => {
+    it('overdue: queries task.findMany and filters cases by returned caseIds', async () => {
+      asMock(mockPrisma._scoped.task.findMany).mockResolvedValue([
+        { caseId: 'case-1' },
+        { caseId: 'case-2' },
+      ]);
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', { dashboardFilter: 'overdue' } as any);
+
+      expect(mockPrisma._scoped.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ completed: false }),
+          select: { caseId: true },
+        }),
+      );
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: { in: ['case-1', 'case-2'] },
+          }),
+        }),
+      );
+    });
+
+    it('pending-signatures: queries signature.findMany and filters cases by caseIds', async () => {
+      asMock(mockPrisma._scoped.signature.findMany).mockResolvedValue([
+        { caseId: 'case-3' },
+      ]);
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', {
+        dashboardFilter: 'pending-signatures',
+      } as any);
+
+      expect(mockPrisma._scoped.signature.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { signedAt: null },
+          select: { caseId: true },
+        }),
+      );
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: { in: ['case-3'] },
+          }),
+        }),
+      );
+    });
+
+    it('this-month: passes createdAt gte startOfMonth in where clause', async () => {
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', { dashboardFilter: 'this-month' } as any);
+
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: expect.objectContaining({ gte: expect.any(Date) }),
+          }),
+        }),
+      );
+    });
+
+    it('active: passes status: { in: ["new", "in_progress"] } in where clause', async () => {
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
+
+      await service.findAll('tenant-a', { dashboardFilter: 'active' } as any);
+
+      expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { in: ['new', 'in_progress'] },
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('happy path: calls findOne then case.update', async () => {
+      const existing = { id: 'case-1', familyContacts: [], tasks: [] };
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(existing);
+      const updated = { id: 'case-1', deceasedName: 'Updated Name' };
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue(updated);
+
+      const result = await service.update('tenant-a', 'case-1', {
+        deceasedName: 'Updated Name',
+      } as any);
+
+      expect(mockPrisma._scoped.case.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'case-1' },
+          data: expect.objectContaining({ deceasedName: 'Updated Name' }),
+        }),
+      );
+      expect(result).toEqual(updated);
+    });
+
+    it('with status: calls assertValidTransition before update', async () => {
+      // First findFirst for findOne, second for assertValidTransition
+      asMock(mockPrisma._scoped.case.findFirst)
+        .mockResolvedValueOnce({ id: 'case-1', familyContacts: [], tasks: [] })
+        .mockResolvedValueOnce({ status: CaseStatus.new });
+      asMock(mockPrisma._scoped.case.update).mockResolvedValue({
+        id: 'case-1',
+        status: CaseStatus.in_progress,
+      });
+
+      await service.update('tenant-a', 'case-1', {
+        status: CaseStatus.in_progress,
+      } as any);
+
+      expect(mockPrisma._scoped.case.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: CaseStatus.in_progress }),
+        }),
+      );
+    });
+
+    it('throws NotFoundException when case does not exist', async () => {
+      asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
+
+      await expect(
+        service.update('tenant-a', 'missing', { deceasedName: 'X' } as any),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getRevenueReport', () => {
+    const from = '2026-01-01';
+    const to = '2026-03-31';
+
+    function setupRevenueMocks({
+      cases = [] as any[],
+      amountPaidSum = 0,
+      totalAmountSum = 0,
+      amountPaidSum2 = 0,
+      groupBy = [] as any[],
+    } = {}) {
+      asMock(mockPrisma._scoped.case.findMany).mockResolvedValue(cases);
+      asMock(mockPrisma._scoped.payment.aggregate)
+        .mockResolvedValueOnce({ _sum: { amountPaid: amountPaidSum } })
+        .mockResolvedValueOnce({
+          _sum: { totalAmount: totalAmountSum, amountPaid: amountPaidSum2 },
+        });
+      asMock(mockPrisma._scoped.case.groupBy).mockResolvedValue(groupBy);
+    }
+
+    it('returns correct shape with totalCases, totalRevenue, averageCaseValue, pendingBalance', async () => {
+      setupRevenueMocks({
+        cases: [
+          {
+            id: 'c1',
+            serviceType: 'burial',
+            createdAt: new Date('2026-01-15'),
+            payment: { amountPaid: 3000, totalAmount: 5000 },
+          },
+        ],
+        amountPaidSum: 3000,
+        totalAmountSum: 5000,
+        amountPaidSum2: 3000,
+        groupBy: [{ serviceType: 'burial', _count: { id: 1 } }],
+      });
+
+      const result = await service.getRevenueReport('tenant-a', from, to);
+
+      expect(result.totalCases).toBe(1);
+      expect(result.totalRevenue).toBe(3000);
+      expect(result.averageCaseValue).toBe(3000);
+      expect(result.pendingBalance).toBe(2000); // 5000 - 3000
+    });
+
+    it('returns averageCaseValue of 0 when totalCases is 0', async () => {
+      setupRevenueMocks({ amountPaidSum: 0 });
+
+      const result = await service.getRevenueReport('tenant-a', from, to);
+
+      expect(result.totalCases).toBe(0);
+      expect(result.averageCaseValue).toBe(0);
+    });
+
+    it('returns revenueByServiceType with count and revenue', async () => {
+      setupRevenueMocks({
+        cases: [
+          {
+            id: 'c1',
+            serviceType: 'cremation',
+            createdAt: new Date('2026-02-10'),
+            payment: { amountPaid: 2000, totalAmount: 2000 },
+          },
+          {
+            id: 'c2',
+            serviceType: 'cremation',
+            createdAt: new Date('2026-02-20'),
+            payment: { amountPaid: 1500, totalAmount: 1500 },
+          },
+        ],
+        amountPaidSum: 3500,
+        totalAmountSum: 3500,
+        amountPaidSum2: 3500,
+        groupBy: [{ serviceType: 'cremation', _count: { id: 2 } }],
+      });
+
+      const result = await service.getRevenueReport('tenant-a', from, to);
+
+      expect(result.revenueByServiceType).toEqual([
+        { serviceType: 'cremation', count: 2, revenue: 3500 },
+      ]);
+    });
+
+    it('month-bucketing: two cases in same month merge into one entry', async () => {
+      setupRevenueMocks({
+        cases: [
+          {
+            id: 'c1',
+            serviceType: 'burial',
+            createdAt: new Date('2026-01-05'),
+            payment: { amountPaid: 1000, totalAmount: 1000 },
+          },
+          {
+            id: 'c2',
+            serviceType: 'cremation',
+            createdAt: new Date('2026-01-20'),
+            payment: { amountPaid: 500, totalAmount: 500 },
+          },
+        ],
+        amountPaidSum: 1500,
+        groupBy: [
+          { serviceType: 'burial', _count: { id: 1 } },
+          { serviceType: 'cremation', _count: { id: 1 } },
+        ],
+      });
+
+      const result = await service.getRevenueReport('tenant-a', from, to);
+
+      expect(result.casesByMonth).toHaveLength(1);
+      expect(result.casesByMonth[0]).toMatchObject({
+        month: '2026-01',
+        count: 2,
+        revenue: 1500,
+      });
+    });
+
+    it('month-bucketing: cases in different months produce separate entries sorted asc', async () => {
+      setupRevenueMocks({
+        cases: [
+          {
+            id: 'c1',
+            serviceType: 'burial',
+            createdAt: new Date('2026-03-01'),
+            payment: { amountPaid: 800, totalAmount: 800 },
+          },
+          {
+            id: 'c2',
+            serviceType: 'cremation',
+            createdAt: new Date('2026-01-15'),
+            payment: { amountPaid: 600, totalAmount: 600 },
+          },
+        ],
+        amountPaidSum: 1400,
+        groupBy: [],
+      });
+
+      const result = await service.getRevenueReport('tenant-a', from, to);
+
+      expect(result.casesByMonth).toHaveLength(2);
+      expect(result.casesByMonth[0].month).toBe('2026-01');
+      expect(result.casesByMonth[1].month).toBe('2026-03');
+    });
+
+    it('handles null payment gracefully (amountPaid defaults to 0)', async () => {
+      setupRevenueMocks({
+        cases: [
+          {
+            id: 'c1',
+            serviceType: 'burial',
+            createdAt: new Date('2026-02-01'),
+            payment: null,
+          },
+        ],
+        amountPaidSum: 0,
+        groupBy: [{ serviceType: 'burial', _count: { id: 1 } }],
+      });
+
+      const result = await service.getRevenueReport('tenant-a', from, to);
+
+      expect(result.revenueByServiceType[0].revenue).toBe(0);
+      expect(result.casesByMonth[0].revenue).toBe(0);
+    });
+
+    it('calls forTenant with the correct tenantId', async () => {
+      setupRevenueMocks();
+
+      await service.getRevenueReport('tenant-b', from, to);
+
+      expect(mockPrisma.forTenant).toHaveBeenCalledWith('tenant-b');
     });
   });
 

@@ -4,9 +4,23 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
+import { ConfigService } from '@nestjs/config';
+import {
+  CognitoIdentityProviderClient,
+  AdminCreateUserCommand,
+  AdminSetUserPasswordCommand,
+  AdminUpdateUserAttributesCommand,
+  AdminResetUserPasswordCommand,
+  AdminDisableUserCommand,
+  AdminEnableUserCommand,
+  UsernameExistsException,
+} from '@aws-sdk/client-cognito-identity-provider';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { CreateAdminUserDto } from './dto/create-admin-user.dto';
+import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
+import { ListUsersFilterDto } from './dto/list-users-filter.dto';
 
 interface ImpersonationToken {
   tenantId: string;
@@ -18,8 +32,16 @@ interface ImpersonationToken {
 export class SuperAdminService {
   // In-memory store for short-lived impersonation tokens (support use only)
   private readonly impersonationTokens = new Map<string, ImpersonationToken>();
+  private readonly cognito: CognitoIdentityProviderClient;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {
+    this.cognito = new CognitoIdentityProviderClient({
+      region: this.configService.get<string>('AWS_REGION') ?? 'us-east-2',
+    });
+  }
 
   listTenants() {
     return this.prisma.tenant.findMany({
@@ -124,5 +146,139 @@ export class SuperAdminService {
       return null;
     }
     return record;
+  }
+
+  // ── User Management ──────────────────────────────────────────────────────
+
+  listUsers(filter: ListUsersFilterDto) {
+    return this.prisma.user.findMany({
+      where: {
+        deletedAt: null,
+        ...(filter.tenantId ? { tenantId: filter.tenantId } : {}),
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        active: true,
+        createdAt: true,
+        tenant: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createUserInTenant(dto: CreateAdminUserDto) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: dto.tenantId },
+    });
+    if (!tenant) throw new NotFoundException(`Tenant ${dto.tenantId} not found`);
+
+    const userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID');
+    let cognitoSub = '';
+
+    try {
+      const result = await this.cognito.send(
+        new AdminCreateUserCommand({
+          UserPoolId: userPoolId,
+          Username: dto.email,
+          MessageAction: 'SUPPRESS',
+          UserAttributes: [
+            { Name: 'email', Value: dto.email },
+            { Name: 'email_verified', Value: 'true' },
+            { Name: 'name', Value: dto.name },
+            { Name: 'custom:tenantId', Value: dto.tenantId },
+            { Name: 'custom:role', Value: dto.role },
+          ],
+        }),
+      );
+      await this.cognito.send(
+        new AdminSetUserPasswordCommand({
+          UserPoolId: userPoolId,
+          Username: dto.email,
+          Password: dto.temporaryPassword,
+          Permanent: true,
+        }),
+      );
+      cognitoSub =
+        result.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ?? '';
+    } catch (err) {
+      if (err instanceof UsernameExistsException) {
+        throw new ConflictException(`User ${dto.email} already exists in Cognito`);
+      }
+      throw err;
+    }
+
+    // Stub sub for offline/dev (no Cognito configured)
+    if (!cognitoSub) {
+      cognitoSub = `cognito-sub-${dto.email.replace('@', '-').replace(/\./g, '-')}`;
+    }
+
+    return this.prisma.user.create({
+      data: {
+        tenantId: dto.tenantId,
+        email: dto.email,
+        name: dto.name,
+        role: dto.role,
+        cognitoSub,
+        active: true,
+      },
+    });
+  }
+
+  async updateUser(id: string, dto: UpdateAdminUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, cognitoSub: true },
+    });
+    if (!user) throw new NotFoundException(`User ${id} not found`);
+
+    const userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID');
+    const COGNITO_ENABLED = !!userPoolId;
+
+    if (COGNITO_ENABLED && dto.role !== undefined) {
+      await this.cognito.send(
+        new AdminUpdateUserAttributesCommand({
+          UserPoolId: userPoolId,
+          Username: user.email,
+          UserAttributes: [{ Name: 'custom:role', Value: dto.role }],
+        }),
+      );
+    }
+
+    if (COGNITO_ENABLED && dto.active !== undefined) {
+      const cmd = dto.active
+        ? new AdminEnableUserCommand({ UserPoolId: userPoolId, Username: user.email })
+        : new AdminDisableUserCommand({ UserPoolId: userPoolId, Username: user.email });
+      await this.cognito.send(cmd);
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(dto.role !== undefined && { role: dto.role }),
+        ...(dto.active !== undefined && { active: dto.active }),
+      },
+    });
+  }
+
+  async resetUserPassword(id: string): Promise<{ ok: true }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { email: true },
+    });
+    if (!user) throw new NotFoundException(`User ${id} not found`);
+
+    const userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID');
+    if (userPoolId) {
+      await this.cognito.send(
+        new AdminResetUserPasswordCommand({
+          UserPoolId: userPoolId,
+          Username: user.email,
+        }),
+      );
+    }
+    return { ok: true };
   }
 }

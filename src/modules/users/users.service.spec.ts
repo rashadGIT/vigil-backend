@@ -238,4 +238,5 @@ describe('UsersService', () => {
       expect(result).toEqual(users);
     });
   });
+
 });
