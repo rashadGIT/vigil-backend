@@ -124,7 +124,9 @@ export class CognitoAuthGuard implements CanActivate {
       // If not provided, fall back to their own tenantId so dashboard works without impersonation.
       const effectiveTenantId =
         dbUser.role === 'super_admin'
-          ? ((request.headers['x-tenant-id'] as string | undefined) ?? dbUser.tenantId ?? '')
+          ? ((request.headers['x-tenant-id'] as string | undefined) ??
+            dbUser.tenantId ??
+            '')
           : dbUser.tenantId;
 
       request.user = {

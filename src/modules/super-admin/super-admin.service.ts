@@ -173,7 +173,8 @@ export class SuperAdminService {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: dto.tenantId },
     });
-    if (!tenant) throw new NotFoundException(`Tenant ${dto.tenantId} not found`);
+    if (!tenant)
+      throw new NotFoundException(`Tenant ${dto.tenantId} not found`);
 
     const userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID');
     let cognitoSub = '';
@@ -205,7 +206,9 @@ export class SuperAdminService {
         result.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ?? '';
     } catch (err) {
       if (err instanceof UsernameExistsException) {
-        throw new ConflictException(`User ${dto.email} already exists in Cognito`);
+        throw new ConflictException(
+          `User ${dto.email} already exists in Cognito`,
+        );
       }
       throw err;
     }
@@ -249,8 +252,14 @@ export class SuperAdminService {
 
     if (COGNITO_ENABLED && dto.active !== undefined) {
       const cmd = dto.active
-        ? new AdminEnableUserCommand({ UserPoolId: userPoolId, Username: user.email })
-        : new AdminDisableUserCommand({ UserPoolId: userPoolId, Username: user.email });
+        ? new AdminEnableUserCommand({
+            UserPoolId: userPoolId,
+            Username: user.email,
+          })
+        : new AdminDisableUserCommand({
+            UserPoolId: userPoolId,
+            Username: user.email,
+          });
       await this.cognito.send(cmd);
     }
 

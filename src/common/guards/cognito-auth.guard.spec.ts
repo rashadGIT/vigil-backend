@@ -194,7 +194,9 @@ describe('CognitoAuthGuard', () => {
       guard = new CognitoAuthGuard(mockReflector as any, mockPrisma as any);
       const ctx = makeContext({ authorization: 'Bearer some-token' });
 
-      await expect(guard.canActivate(ctx)).rejects.toThrow('Auth not configured');
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        'Auth not configured',
+      );
     });
 
     it('happy path: sets req.user when token and DB user are valid', async () => {
@@ -226,7 +228,9 @@ describe('CognitoAuthGuard', () => {
 
       const ctx = makeContext({ authorization: 'Bearer valid-token' });
 
-      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('super_admin gets effectiveTenantId from x-tenant-id header when present', async () => {
@@ -244,7 +248,7 @@ describe('CognitoAuthGuard', () => {
       await guard.canActivate(ctx);
 
       const req = ctx.switchToHttp().getRequest();
-      expect((req.user as any).tenantId).toBe('override-tenant');
+      expect(req.user.tenantId).toBe('override-tenant');
     });
 
     it('super_admin falls back to dbUser.tenantId when x-tenant-id not present', async () => {
@@ -259,7 +263,7 @@ describe('CognitoAuthGuard', () => {
       await guard.canActivate(ctx);
 
       const req = ctx.switchToHttp().getRequest();
-      expect((req.user as any).tenantId).toBe('own-tenant');
+      expect(req.user.tenantId).toBe('own-tenant');
     });
 
     it('accepts token from access_token cookie when no Authorization header', async () => {

@@ -149,7 +149,9 @@ describe('CasesService', () => {
       ]);
       asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
 
-      await service.findAll('tenant-a', { dashboardFilter: 'pending-signatures' });
+      await service.findAll('tenant-a', {
+        dashboardFilter: 'pending-signatures',
+      });
 
       expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -269,12 +271,19 @@ describe('CasesService', () => {
 
   describe('update', () => {
     it('updates case fields without status', async () => {
-      const existing = { id: 'case-1', status: 'new', familyContacts: [], tasks: [] };
+      const existing = {
+        id: 'case-1',
+        status: 'new',
+        familyContacts: [],
+        tasks: [],
+      };
       const updated = { id: 'case-1', deceasedName: 'Jane Doe' };
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(existing);
       asMock(mockPrisma._scoped.case.update).mockResolvedValue(updated);
 
-      const result = await service.update('tenant-a', 'case-1', { deceasedName: 'Jane Doe' } as any);
+      const result = await service.update('tenant-a', 'case-1', {
+        deceasedName: 'Jane Doe',
+      });
 
       expect(result).toEqual(updated);
       expect(mockPrisma._scoped.case.update).toHaveBeenCalledWith(
@@ -286,7 +295,7 @@ describe('CasesService', () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
       await expect(
-        service.update('tenant-a', 'missing', { deceasedName: 'X' } as any),
+        service.update('tenant-a', 'missing', { deceasedName: 'X' }),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -542,7 +551,9 @@ describe('CasesService', () => {
     it('this-month: passes createdAt gte startOfMonth in where clause', async () => {
       asMock(mockPrisma._scoped.case.findMany).mockResolvedValue([]);
 
-      await service.findAll('tenant-a', { dashboardFilter: 'this-month' } as any);
+      await service.findAll('tenant-a', {
+        dashboardFilter: 'this-month',
+      } as any);
 
       expect(mockPrisma._scoped.case.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -577,7 +588,7 @@ describe('CasesService', () => {
 
       const result = await service.update('tenant-a', 'case-1', {
         deceasedName: 'Updated Name',
-      } as any);
+      });
 
       expect(mockPrisma._scoped.case.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -600,7 +611,7 @@ describe('CasesService', () => {
 
       await service.update('tenant-a', 'case-1', {
         status: CaseStatus.in_progress,
-      } as any);
+      });
 
       expect(mockPrisma._scoped.case.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -613,7 +624,7 @@ describe('CasesService', () => {
       asMock(mockPrisma._scoped.case.findFirst).mockResolvedValue(null);
 
       await expect(
-        service.update('tenant-a', 'missing', { deceasedName: 'X' } as any),
+        service.update('tenant-a', 'missing', { deceasedName: 'X' }),
       ).rejects.toThrow(NotFoundException);
     });
   });

@@ -84,20 +84,29 @@ export class AuthService {
     }
   }
 
-  async syncGoogleUser(accessToken: string, idToken: string): Promise<UserProfile> {
+  async syncGoogleUser(
+    accessToken: string,
+    idToken: string,
+  ): Promise<UserProfile> {
     const userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID');
     const clientId = this.configService.get<string>('COGNITO_CLIENT_ID');
     if (!userPoolId || !clientId) {
       throw new UnauthorizedException('Auth not configured');
     }
 
-    const verifier = CognitoJwtVerifier.create({ userPoolId, tokenUse: 'access', clientId });
+    const verifier = CognitoJwtVerifier.create({
+      userPoolId,
+      tokenUse: 'access',
+      clientId,
+    });
     let sub: string;
     try {
       const payload = await verifier.verify(accessToken);
       sub = payload.sub;
     } catch (err) {
-      this.logger.warn(`syncGoogleUser: invalid access token — ${(err as Error).message}`);
+      this.logger.warn(
+        `syncGoogleUser: invalid access token — ${(err as Error).message}`,
+      );
       throw new UnauthorizedException('Invalid access token');
     }
 
@@ -109,31 +118,53 @@ export class AuthService {
 
     const tenantId = idPayload['custom:tenantId'];
     const rawRole = idPayload['custom:role'] ?? 'staff';
-    const VALID_ROLES: UserRole[] = ['super_admin', 'funeral_director', 'staff'];
-    const role: UserRole = VALID_ROLES.includes(rawRole as UserRole) ? (rawRole as UserRole) : 'staff';
+    const VALID_ROLES: UserRole[] = [
+      'super_admin',
+      'funeral_director',
+      'staff',
+    ];
+    const role: UserRole = VALID_ROLES.includes(rawRole as UserRole)
+      ? (rawRole as UserRole)
+      : 'staff';
     const email = idPayload.email;
     const name =
-      [idPayload.given_name, idPayload.family_name].filter(Boolean).join(' ') || email;
+      [idPayload.given_name, idPayload.family_name].filter(Boolean).join(' ') ||
+      email;
 
     if (!tenantId) {
       this.logger.warn(`syncGoogleUser: no custom:tenantId for sub ${sub}`);
       throw new UnauthorizedException('User has no tenant assigned');
     }
 
-    const tenantExists = await this.prisma.tenant.findUnique({ where: { id: tenantId }, select: { id: true } });
+    const tenantExists = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { id: true },
+    });
     if (!tenantExists) {
-      this.logger.warn(`syncGoogleUser: tenantId ${tenantId} not found in DB for sub ${sub}`);
-      throw new UnauthorizedException(`Tenant '${tenantId}' not found — update your Cognito custom:tenantId attribute`);
+      this.logger.warn(
+        `syncGoogleUser: tenantId ${tenantId} not found in DB for sub ${sub}`,
+      );
+      throw new UnauthorizedException(
+        `Tenant '${tenantId}' not found — update your Cognito custom:tenantId attribute`,
+      );
     }
 
-    this.logger.log(`syncGoogleUser: upserting user sub=${sub} email=${email} tenantId=${tenantId} role=${role}`);
+    this.logger.log(
+      `syncGoogleUser: upserting user sub=${sub} email=${email} tenantId=${tenantId} role=${role}`,
+    );
     const user = await this.prisma.user.upsert({
       where: { cognitoSub: sub },
       create: { cognitoSub: sub, tenantId, email, name, role },
       update: { email, name, role },
       select: { id: true, email: true, name: true, role: true, tenantId: true },
     });
-    return { id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId };
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      tenantId: user.tenantId,
+    };
   }
 
   async logout(accessToken: string, response: Response): Promise<{ ok: true }> {

@@ -183,7 +183,10 @@ describe('PriceListService', () => {
 
       expect(scopedAuditLog.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ action: 'gpl_view', userId: 'user-1' }),
+          data: expect.objectContaining({
+            action: 'gpl_view',
+            userId: 'user-1',
+          }),
         }),
       );
     });

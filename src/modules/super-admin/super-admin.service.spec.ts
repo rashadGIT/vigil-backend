@@ -2,10 +2,7 @@
  * @jest-environment node
  */
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   CognitoIdentityProviderClient,
@@ -93,7 +90,7 @@ describe('SuperAdminService', () => {
       mockTenant.findFirst.mockResolvedValue({ id: 'existing' });
 
       await expect(
-        service.createTenant({ name: 'Dup', slug: 'dup' } as any),
+        service.createTenant({ name: 'Dup', slug: 'dup' }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -101,7 +98,7 @@ describe('SuperAdminService', () => {
       mockTenant.findFirst.mockResolvedValue({ id: 'existing' });
 
       await expect(
-        service.createTenant({ name: 'Dup', slug: 'dup' } as any),
+        service.createTenant({ name: 'Dup', slug: 'dup' }),
       ).rejects.toThrow('"dup"');
     });
 
@@ -113,7 +110,7 @@ describe('SuperAdminService', () => {
       const result = await service.createTenant({
         name: 'Sunrise',
         slug: 'sunrise',
-      } as any);
+      });
 
       expect(mockTenant.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -127,7 +124,7 @@ describe('SuperAdminService', () => {
       mockTenant.findFirst.mockResolvedValue(null);
       mockTenant.create.mockResolvedValue({ id: 'x' });
 
-      await service.createTenant({ name: 'Test', slug: 'test' } as any);
+      await service.createTenant({ name: 'Test', slug: 'test' });
 
       expect(mockTenant.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -144,16 +141,16 @@ describe('SuperAdminService', () => {
       mockTenant.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.updateTenant('missing-id', { active: false } as any),
+        service.updateTenant('missing-id', { active: false }),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('throws NotFoundException with tenant id in message', async () => {
       mockTenant.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.updateTenant('missing-id', {} as any),
-      ).rejects.toThrow('missing-id');
+      await expect(service.updateTenant('missing-id', {})).rejects.toThrow(
+        'missing-id',
+      );
     });
 
     it('calls tenant.update when tenant exists', async () => {
@@ -161,7 +158,7 @@ describe('SuperAdminService', () => {
       const updated = { id: 't1', active: false };
       mockTenant.update.mockResolvedValue(updated);
 
-      const result = await service.updateTenant('t1', { active: false } as any);
+      const result = await service.updateTenant('t1', { active: false });
 
       expect(mockTenant.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -214,9 +211,9 @@ describe('SuperAdminService', () => {
     it('throws ConflictException when tenant is inactive', async () => {
       mockTenant.findUnique.mockResolvedValue({ id: 't1', active: false });
 
-      await expect(
-        service.createImpersonationToken('t1'),
-      ).rejects.toThrow(ConflictException);
+      await expect(service.createImpersonationToken('t1')).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('returns token and expiresAt on happy path', async () => {
@@ -274,7 +271,10 @@ describe('SuperAdminService', () => {
 
       const result = service.resolveImpersonationToken(token);
 
-      expect(result).toMatchObject({ tenantId: 't1', role: 'funeral_director' });
+      expect(result).toMatchObject({
+        tenantId: 't1',
+        role: 'funeral_director',
+      });
     });
   });
 
@@ -404,9 +404,9 @@ describe('SuperAdminService', () => {
     it('throws NotFoundException when user not found', async () => {
       mockUser.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.updateUser('missing-id', {} as any),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.updateUser('missing-id', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('updates role in Cognito when COGNITO_USER_POOL_ID is set', async () => {
@@ -448,7 +448,7 @@ describe('SuperAdminService', () => {
       mockCognito.send.mockResolvedValue({});
       mockUser.update.mockResolvedValue({ id: 'u1', active: true });
 
-      await service.updateUser('u1', { active: true } as any);
+      await service.updateUser('u1', { active: true });
 
       expect(mockCognito.send).toHaveBeenCalled();
     });
@@ -463,7 +463,7 @@ describe('SuperAdminService', () => {
       mockCognito.send.mockResolvedValue({});
       mockUser.update.mockResolvedValue({ id: 'u1', active: false });
 
-      await service.updateUser('u1', { active: false } as any);
+      await service.updateUser('u1', { active: false });
 
       expect(mockCognito.send).toHaveBeenCalled();
     });
@@ -477,7 +477,7 @@ describe('SuperAdminService', () => {
       mockConfig.get.mockReturnValue(undefined);
       mockUser.update.mockResolvedValue({ id: 'u1', active: false });
 
-      await service.updateUser('u1', { active: false } as any);
+      await service.updateUser('u1', { active: false });
 
       expect(mockUser.update).toHaveBeenCalledWith(
         expect.objectContaining({

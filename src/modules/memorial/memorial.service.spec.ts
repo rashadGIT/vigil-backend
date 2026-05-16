@@ -233,7 +233,9 @@ describe('MemorialService', () => {
       scopedMemorialPage.findFirst.mockResolvedValue(existing);
       scopedMemorialPage.update.mockResolvedValue(updated);
 
-      const result = await service.update('tenant-a', 'mem-1', { content: 'updated' } as any);
+      const result = await service.update('tenant-a', 'mem-1', {
+        content: 'updated',
+      } as any);
 
       expect(result).toEqual(updated);
       expect(scopedMemorialPage.update).toHaveBeenCalledWith(
@@ -244,9 +246,9 @@ describe('MemorialService', () => {
     it('throws NotFoundException when memorial page does not exist', async () => {
       scopedMemorialPage.findFirst.mockResolvedValue(null);
 
-      await expect(
-        service.update('tenant-a', 'missing', {} as any),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update('tenant-a', 'missing', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

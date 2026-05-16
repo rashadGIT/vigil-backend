@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -66,7 +74,10 @@ export class SuperAdminController {
     summary:
       'Issue a 1-hour impersonation token scoped to a tenant (super admin only)',
   })
-  @ApiResponse({ status: 201, description: 'Returns short-lived impersonation token' })
+  @ApiResponse({
+    status: 201,
+    description: 'Returns short-lived impersonation token',
+  })
   @ApiResponse({ status: 404, description: 'Tenant not found' })
   @ApiResponse({ status: 409, description: 'Tenant is inactive' })
   impersonate(@Param('tenantId') tenantId: string) {
@@ -76,7 +87,9 @@ export class SuperAdminController {
   // ── User Management ──────────────────────────────────────────────────────
 
   @Get('users')
-  @ApiOperation({ summary: 'List all users across tenants (optional tenantId filter)' })
+  @ApiOperation({
+    summary: 'List all users across tenants (optional tenantId filter)',
+  })
   @ApiResponse({ status: 200, description: 'Returns users with tenant info' })
   listUsers(@Query() filter: ListUsersFilterDto) {
     return this.service.listUsers(filter);

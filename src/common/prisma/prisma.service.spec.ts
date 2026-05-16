@@ -157,7 +157,10 @@ describe('PrismaService.forTenant()', () => {
 
     it('injects tenantId into where for update operation', async () => {
       const query = jest.fn().mockResolvedValue({});
-      const inputArgs = { where: { id: 'case-1' }, data: { status: 'archived' } };
+      const inputArgs = {
+        where: { id: 'case-1' },
+        data: { status: 'archived' },
+      };
       const allOps = capturedConfig.query.$allModels.$allOperations;
 
       await allOps({
@@ -168,7 +171,10 @@ describe('PrismaService.forTenant()', () => {
       });
 
       const calledWith = query.mock.calls[0][0];
-      expect(calledWith.where).toMatchObject({ id: 'case-1', tenantId: 'tenant-1' });
+      expect(calledWith.where).toMatchObject({
+        id: 'case-1',
+        tenantId: 'tenant-1',
+      });
     });
 
     it('injects where: { tenantId } for count when no where provided', async () => {
