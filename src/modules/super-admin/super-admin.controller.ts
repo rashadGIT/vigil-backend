@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -8,6 +16,9 @@ import {
 import { SuperAdminService } from './super-admin.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { CreateAdminUserDto } from './dto/create-admin-user.dto';
+import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
+import { ListUsersFilterDto } from './dto/list-users-filter.dto';
 import { SuperAdminOnly } from '../../common/decorators/super-admin-only.decorator';
 
 @ApiTags('super-admin')
@@ -71,5 +82,41 @@ export class SuperAdminController {
   @ApiResponse({ status: 409, description: 'Tenant is inactive' })
   impersonate(@Param('tenantId') tenantId: string) {
     return this.service.createImpersonationToken(tenantId);
+  }
+
+  // ── User Management ──────────────────────────────────────────────────────
+
+  @Get('users')
+  @ApiOperation({
+    summary: 'List all users across tenants (optional tenantId filter)',
+  })
+  @ApiResponse({ status: 200, description: 'Returns users with tenant info' })
+  listUsers(@Query() filter: ListUsersFilterDto) {
+    return this.service.listUsers(filter);
+  }
+
+  @Post('users')
+  @ApiOperation({ summary: 'Create a user in any tenant' })
+  @ApiResponse({ status: 201, description: 'User created' })
+  @ApiResponse({ status: 404, description: 'Tenant not found' })
+  @ApiResponse({ status: 409, description: 'Email already exists in Cognito' })
+  createUser(@Body() dto: CreateAdminUserDto) {
+    return this.service.createUserInTenant(dto);
+  }
+
+  @Patch('users/:id')
+  @ApiOperation({ summary: 'Update user role or active status' })
+  @ApiResponse({ status: 200, description: 'User updated' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  updateUser(@Param('id') id: string, @Body() dto: UpdateAdminUserDto) {
+    return this.service.updateUser(id, dto);
+  }
+
+  @Post('users/:id/reset-password')
+  @ApiOperation({ summary: 'Trigger Cognito password reset for a user' })
+  @ApiResponse({ status: 201, description: 'Password reset email sent' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  resetUserPassword(@Param('id') id: string) {
+    return this.service.resetUserPassword(id);
   }
 }

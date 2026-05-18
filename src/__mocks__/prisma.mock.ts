@@ -11,6 +11,10 @@ export function makeScopedClient() {
       delete: jest.fn(),
       deleteMany: jest.fn(),
       count: jest.fn(),
+      groupBy: jest.fn(),
+    },
+    payment: {
+      aggregate: jest.fn(),
     },
     signature: {
       count: jest.fn(),

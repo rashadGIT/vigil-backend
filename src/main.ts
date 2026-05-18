@@ -53,6 +53,9 @@ async function bootstrap(): Promise<void> {
       'Content-Type',
       'Authorization',
       'x-dev-user',
+      'x-dev-bypass-token',
+      'x-tenant-id',
+      'x-tenant-slug',
       'x-kelova-internal-key',
     ],
   });

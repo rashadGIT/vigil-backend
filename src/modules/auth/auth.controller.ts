@@ -42,6 +42,20 @@ export class AuthController {
     return this.authService.refresh(token);
   }
 
+  @Public()
+  @Post('sync')
+  @ApiOperation({
+    summary: 'Provision or sync a Google OAuth user into the DB',
+  })
+  @ApiResponse({ status: 200, description: 'Returns user profile' })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid token or user has no tenant assigned',
+  })
+  sync(@Body() body: { accessToken: string; idToken: string }) {
+    return this.authService.syncGoogleUser(body.accessToken, body.idToken);
+  }
+
   @ApiBearerAuth()
   @Get('me')
   @ApiOperation({ summary: 'Get the currently authenticated user' })
